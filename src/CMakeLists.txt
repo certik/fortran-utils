@@ -5,7 +5,7 @@ set(SRC
 )
 
 if(WITH_LAPACK)
-    set(SRC ${SRC} lapack.f90 splines.f90)
+    set(SRC ${SRC} lapack.f90 splines.f90 linalg.f90)
 endif()
 
 if(WITH_HDF5)
