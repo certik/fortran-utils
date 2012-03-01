@@ -6,7 +6,7 @@ module utils
 use types, only: dp
 implicit none
 private
-public upcase, lowcase, whitechar, blank, num_strings, getstring, &
+public upcase, lowcase, whitechar, blank, numstrings, getstring, &
     stop_error, arange, loadtxt, savetxt, newunit, assert, str
 
 interface str
@@ -63,7 +63,7 @@ end do
 blank = (i>len(string))
 end function
 
-integer function num_strings(s) result(n)
+integer function numstrings(s) result(n)
 ! Returns number of substrings contained in input string 's' delimited
 ! by white space.
 character(*), intent(in) :: s    ! input string
