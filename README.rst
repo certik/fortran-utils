@@ -22,6 +22,7 @@ Functionality
 * Saving/loading 2D arrays (``savetxt``, ``loadtxt``)
 * Meshes (exponential, uniform)
 * Cubic splines
+* Saving/loading PPM images
 
 Contributors
 ------------

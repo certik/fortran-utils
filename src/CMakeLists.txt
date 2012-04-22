@@ -2,6 +2,7 @@ set(SRC
     constants.f90   sorting.f90           types.f90
     utils.f90
     mesh.f90
+    ppm.f90
 )
 
 if(WITH_LAPACK)
