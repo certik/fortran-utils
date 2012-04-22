@@ -1,6 +1,7 @@
 program test_ppm
 use ppm, only: loadppm, saveppm
 use utils, only: assert
+use convolution, only: apply
 implicit none
 
 integer, allocatable :: img(:, :, :), img2(:, :, :)
@@ -21,5 +22,9 @@ call assert(all(img(:, w/2, h/2) == [255, 255, 255]))  ! white
 call saveppm("tmp.ppm", img)
 call loadppm("tmp.ppm", img2)
 call assert(all(img == img2))
+
+! Apply some transformation to the image:
+call apply(img)
+call saveppm("tmp2.ppm", img)
 
 end program
