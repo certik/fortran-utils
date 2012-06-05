@@ -1,4 +1,4 @@
-program test_mesh
+program test_eig
 use types, only: dp
 use utils, only: assert
 use linalg, only: eigh
