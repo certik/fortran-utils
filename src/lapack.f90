@@ -93,6 +93,25 @@ interface
     CHARACTER          CMACH
     END FUNCTION
 
+    INTEGER FUNCTION ILAENV( ISPEC, NAME, OPTS, N1, N2, N3, N4 )
+    CHARACTER*( * )    NAME, OPTS
+    INTEGER            ISPEC, N1, N2, N3, N4
+    END FUNCTION
+
+    SUBROUTINE ZGETRF( M, N, A, LDA, IPIV, INFO )
+    use lapack_precision, only: dp
+    INTEGER            INFO, LDA, M, N
+    INTEGER            IPIV( * )
+    COMPLEX(dp)        A( LDA, * )
+    END SUBROUTINE
+
+    SUBROUTINE ZGETRI( N, A, LDA, IPIV, WORK, LWORK, INFO )
+    use lapack_precision, only: dp
+    INTEGER            INFO, LDA, LWORK, N
+    INTEGER            IPIV( * )
+    COMPLEX(dp)        A( LDA, * ), WORK( * )
+    END SUBROUTINE
+
 end interface
 
 contains
