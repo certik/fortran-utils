@@ -269,7 +269,7 @@ end function
         EJN=ENVJ(N,A0)
         IF (EJN.LE.HMP) THEN
            OBJ=MP
-           N0=INT(1.1*A0)+1
+           N0=INT(1.1D0*A0)+1
         ELSE
            OBJ=HMP+EJN
            N0=N
