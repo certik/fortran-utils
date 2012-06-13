@@ -3,6 +3,7 @@ set(SRC
     utils.f90
     mesh.f90
     ppm.f90
+    optimize.f90
 )
 
 if(WITH_LAPACK)
