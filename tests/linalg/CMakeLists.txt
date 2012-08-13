@@ -7,10 +7,12 @@ set(LAPACK_LIBS
     blas
     )
 
-add_executable(test_eig test_eig.f90)
-target_link_libraries(test_eig fortran_utils ${LAPACK_LIBS})
-add_test(test_eig ${PROJECT_BINARY_DIR}/test_eig)
+macro(ADDTEST name)
+    add_executable(${name} ${name}.f90)
+    target_link_libraries(${name} fortran_utils ${LAPACK_LIBS})
+    add_test(${name} ${PROJECT_BINARY_DIR}/${name})
+endmacro(ADDTEST)
 
-add_executable(test_inv test_inv.f90)
-target_link_libraries(test_inv fortran_utils ${LAPACK_LIBS})
-add_test(test_inv ${PROJECT_BINARY_DIR}/test_inv)
+ADDTEST(test_eig)
+ADDTEST(test_eig_bigger)
+ADDTEST(test_inv)
