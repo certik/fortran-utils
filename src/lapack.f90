@@ -1,7 +1,5 @@
-module lapack_precision
+module lapack
 implicit none
-private
-public dp
 
 ! This is the precision that LAPACK "d" routines were compiled with (typically
 ! double precision, unless a special compiler option was used while compiling
@@ -13,32 +11,24 @@ public dp
 ! quadruple precision, it will be promoted both in LAPACK and here.)
 integer, parameter:: dp=kind(0.d0)
 
-end module
-
-
-
-
-module lapack
-implicit none
-
 interface
 
     SUBROUTINE DGESV( N, NRHS, A, LDA, IPIV, B, LDB, INFO )
-    use lapack_precision, only: dp
+    import :: dp
     INTEGER            INFO, LDA, LDB, N, NRHS
     INTEGER            IPIV( * )
     REAL(dp)           A( LDA, * ), B( LDB, * )
     END SUBROUTINE
 
     SUBROUTINE DGBSV( N, KL, KU, NRHS, AB, LDAB, IPIV, B, LDB, INFO )
-    use lapack_precision, only: dp
+    import :: dp
     INTEGER            INFO, KL, KU, LDAB, LDB, N, NRHS
     INTEGER            IPIV( * )
     REAL(dp)           AB( LDAB, * ), B( LDB, * )
     END SUBROUTINE
 
     SUBROUTINE DSYSV( UPLO, N, NRHS, A, LDA, IPIV, B, LDB, WORK, LWORK, INFO )
-    use lapack_precision, only: dp
+    import :: dp
     CHARACTER          UPLO
     INTEGER            INFO, LDA, LDB, LWORK, N, NRHS
     INTEGER            IPIV( * )
@@ -48,7 +38,7 @@ interface
     SUBROUTINE DSYSVX( FACT, UPLO, N, NRHS, A, LDA, AF, LDAF, IPIV, B, &
         LDB, X, LDX, RCOND, FERR, BERR, WORK, LWORK, &
         IWORK, INFO )
-    use lapack_precision, only: dp
+    import :: dp
     CHARACTER          FACT, UPLO
     INTEGER            INFO, LDA, LDAF, LDB, LDX, LWORK, N, NRHS
     REAL(dp)           RCOND
@@ -60,7 +50,7 @@ interface
     SUBROUTINE DSYGVX( ITYPE, JOBZ, RANGE, UPLO, N, A, LDA, B, LDB, &
                        VL, VU, IL, IU, ABSTOL, M, W, Z, LDZ, WORK, &
                        LWORK, IWORK, IFAIL, INFO )
-    use lapack_precision, only: dp
+    import :: dp
     CHARACTER          JOBZ, RANGE, UPLO
     INTEGER            IL, INFO, ITYPE, IU, LDA, LDB, LDZ, LWORK, M, N
     REAL(dp)           ABSTOL, VL, VU
@@ -71,7 +61,7 @@ interface
 
     SUBROUTINE DGGEV( JOBVL, JOBVR, N, A, LDA, B, LDB, ALPHAR, ALPHAI, &
         BETA, VL, LDVL, VR, LDVR, WORK, LWORK, INFO )
-    use lapack_precision, only: dp
+    import :: dp
     CHARACTER          JOBVL, JOBVR
     INTEGER            INFO, LDA, LDB, LDVL, LDVR, LWORK, N
     REAL(dp)           A( LDA, * ), ALPHAI( * ), ALPHAR( * ), &
@@ -81,7 +71,7 @@ interface
 
     SUBROUTINE DSYGVD( ITYPE, JOBZ, UPLO, N, A, LDA, B, LDB, W, WORK, &
         LWORK, IWORK, LIWORK, INFO )
-    use lapack_precision, only: dp
+    import :: dp
     CHARACTER          JOBZ, UPLO
     INTEGER            INFO, ITYPE, LDA, LDB, LIWORK, LWORK, N
     INTEGER            IWORK( * )
@@ -89,7 +79,7 @@ interface
     END SUBROUTINE
 
     REAL(dp) FUNCTION DLAMCH( CMACH )
-    use lapack_precision, only: dp
+    import :: dp
     CHARACTER          CMACH
     END FUNCTION
 
@@ -99,14 +89,14 @@ interface
     END FUNCTION
 
     SUBROUTINE ZGETRF( M, N, A, LDA, IPIV, INFO )
-    use lapack_precision, only: dp
+    import :: dp
     INTEGER            INFO, LDA, M, N
     INTEGER            IPIV( * )
     COMPLEX(dp)        A( LDA, * )
     END SUBROUTINE
 
     SUBROUTINE ZGETRI( N, A, LDA, IPIV, WORK, LWORK, INFO )
-    use lapack_precision, only: dp
+    import :: dp
     INTEGER            INFO, LDA, LWORK, N
     INTEGER            IPIV( * )
     COMPLEX(dp)        A( LDA, * ), WORK( * )
