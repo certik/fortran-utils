@@ -1,14 +1,19 @@
 module linalg
 use types, only: dp
-use lapack, only: dsygvd, ilaenv, zgetri, zgetrf
+use lapack, only: dsyevd, dsygvd, ilaenv, zgetri, zgetrf
 use utils, only: stop_error
 implicit none
 private
 public eigh, inv, eye
 
+interface eigh
+    module procedure eigh_generalized
+    module procedure eigh_simple
+end interface
+
 contains
 
-subroutine eigh(Am, Bm, lam, c)
+subroutine eigh_generalized(Am, Bm, lam, c)
 ! solves generalized eigen value problem for all eigenvalues and eigenvectors
 ! Am must by symmetric, Bm symmetric positive definite.
 ! Only the lower triangular part of Am and Bm is used.
@@ -43,6 +48,40 @@ if (info /= 0) then
             "not be completed and no eigenvalues or eigenvectors were computed."
     end if
     call stop_error('eigh: dsygvd error')
+end if
+c = Amt
+end subroutine
+
+subroutine eigh_simple(Am, lam, c)
+! solves eigen value problem for all eigenvalues and eigenvectors
+! Am must by symmetric
+! Only the lower triangular part of Am is used.
+real(dp), intent(in) :: Am(:,:)   ! LHS matrix: Am c = lam c
+real(dp), intent(out) :: lam(:)   ! eigenvalues: Am c = lam c
+real(dp), intent(out) :: c(:,:)   ! eigenvectors: Am c = lam c; c(i,j) = ith component of jth vec.
+integer :: n
+! lapack variables
+integer :: lwork, liwork, info
+integer, allocatable:: iwork(:)
+real(dp), allocatable:: Amt(:,:), work(:)
+
+! solve
+n = size(Am,1)
+lwork = 1 + 6*n + 2*n**2
+liwork = 3 + 5*n
+allocate(Amt(n,n), work(lwork), iwork(liwork))
+Amt = Am; ! Amt temporary overwritten by dsyevd
+call dsyevd('V','L',n,Amt,n,lam,work,lwork,iwork,liwork,info)
+if (info /= 0) then
+    print *, "dsyevd returned info =", info
+    if (info < 0) then
+        print *, "the", -info, "-th argument had an illegal value"
+    else
+        print *, "the algorithm failed to compute an eigenvalue while working"
+        print *, "on the submatrix lying in rows and columns", 1.0_dp*info/(n+1)
+        print *, "through", mod(info, n+1)
+    end if
+    call stop_error('eigh: dsyevd error')
 end if
 c = Amt
 end subroutine

@@ -21,6 +21,19 @@ do i = 1, 2
     call assert(abs(n - 1) < eps)
 end do
 
+call eigh(A, lam, c)
+! Test eigenvalues:
+call assert(all(abs(lam - [-1, 1]) < eps))
+do i = 1, 2
+    ! Test that c(:, i) are eigenvectors:
+    r = matmul(A, c(:, i)) - lam(i) * c(:, i)
+    call assert(sqrt(dot_product(r, r)) < eps)
+    ! Test that eigenvectors are properly normalized:
+    n = dot_product(c(:, i), c(:, i))
+    call assert(abs(n - 1) < eps)
+end do
+
+
 A = reshape([2, -4, -4, 2], [2, 2])
 B = reshape([2, 1, 1, 2], [2, 2])
 call eigh(A, B, lam, c)
