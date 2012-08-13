@@ -47,6 +47,15 @@ interface
                        BERR( * ), FERR( * ), WORK( * ), X( LDX, * )
     END SUBROUTINE
 
+    SUBROUTINE DSYEVD( JOBZ, UPLO, N, A, LDA, W, WORK, LWORK, IWORK, &
+                       LIWORK, INFO )
+    import :: dp
+    CHARACTER          JOBZ, UPLO
+    INTEGER            INFO, LDA, LIWORK, LWORK, N
+    INTEGER            IWORK( * )
+    REAL(dp)           A( LDA, * ), W( * ), WORK( * )
+    END SUBROUTINE
+
     SUBROUTINE DSYGVX( ITYPE, JOBZ, RANGE, UPLO, N, A, LDA, B, LDB, &
                        VL, VU, IL, IU, ABSTOL, M, W, Z, LDZ, WORK, &
                        LWORK, IWORK, IFAIL, INFO )
