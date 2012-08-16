@@ -27,7 +27,5 @@ Functionality
 Contributors
 ------------
 
-List of people who contributed code to this library:
-
-* John E. Pask
-* Ondřej Čertík
+See the `AUTHORS
+<https://github.com/certik/fortran-utils/blob/master/AUTHORS>`_ file.
