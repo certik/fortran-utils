@@ -20,6 +20,37 @@ interface
     REAL(dp)           A( LDA, * ), B( LDB, * )
     END SUBROUTINE
 
+    SUBROUTINE DGESVX( FACT, TRANS, N, NRHS, A, LDA, AF, LDAF, IPIV, &
+        EQUED, R, C, B, LDB, X, LDX, RCOND, FERR, BERR, WORK, IWORK, INFO )
+    import :: dp
+    CHARACTER          EQUED, FACT, TRANS
+    INTEGER            INFO, LDA, LDAF, LDB, LDX, N, NRHS
+    REAL(dp)           RCOND
+    INTEGER            IPIV( * ), IWORK( * )
+    REAL(dp)           A( LDA, * ), AF( LDAF, * ), B( LDB, * ), BERR( * ), &
+                       C( * ), FERR( * ), R( * ), WORK( * ), X( LDX, * )
+    END SUBROUTINE
+
+    SUBROUTINE ZGESV( N, NRHS, A, LDA, IPIV, B, LDB, INFO )
+    import :: dp
+    INTEGER            INFO, LDA, LDB, N, NRHS
+    INTEGER            IPIV( * )
+    COMPLEX(dp)        A( LDA, * ), B( LDB, * )
+    END SUBROUTINE
+
+    SUBROUTINE ZGESVX( FACT, TRANS, N, NRHS, A, LDA, AF, LDAF, IPIV, &
+        EQUED, R, C, B, LDB, X, LDX, RCOND, FERR, BERR, &
+        WORK, RWORK, INFO )
+    import :: dp
+    CHARACTER          EQUED, FACT, TRANS
+    INTEGER            INFO, LDA, LDAF, LDB, LDX, N, NRHS
+    REAL(dp)           RCOND
+    INTEGER            IPIV( * )
+    REAL(dp)           BERR( * ), C( * ), FERR( * ), R( * ), RWORK( * )
+    COMPLEX(dp)        A( LDA, * ), AF( LDAF, * ), B( LDB, * ), WORK( * ), &
+                       X( LDX, * )
+    END SUBROUTINE
+
     SUBROUTINE DGBSV( N, KL, KU, NRHS, AB, LDAB, IPIV, B, LDB, INFO )
     import :: dp
     INTEGER            INFO, KL, KU, LDAB, LDB, N, NRHS
@@ -76,6 +107,64 @@ interface
     REAL(dp)           A( LDA, * ), ALPHAI( * ), ALPHAR( * ), &
                        B( LDB, * ), BETA( * ), VL( LDVL, * ), &
                        VR( LDVR, * ), WORK( * )
+    END SUBROUTINE
+
+    SUBROUTINE DGGEVX( BALANC, JOBVL, JOBVR, SENSE, N, A, LDA, B, LDB, &
+        ALPHAR, ALPHAI, BETA, VL, LDVL, VR, LDVR, ILO, IHI, LSCALE, RSCALE, &
+        ABNRM, BBNRM, RCONDE, RCONDV, WORK, LWORK, IWORK, BWORK, INFO )
+    import :: dp
+    CHARACTER          BALANC, JOBVL, JOBVR, SENSE
+    INTEGER            IHI, ILO, INFO, LDA, LDB, LDVL, LDVR, LWORK, N
+    REAL(dp)           ABNRM, BBNRM
+    LOGICAL            BWORK( * )
+    INTEGER            IWORK( * )
+    REAL(dp)           A( LDA, * ), ALPHAI( * ), ALPHAR( * ), B( LDB, * ), &
+                       BETA( * ), LSCALE( * ), RCONDE( * ), RCONDV( * ), &
+                       RSCALE( * ), VL( LDVL, * ), VR( LDVR, * ), WORK( * )
+    END SUBROUTINE
+
+    SUBROUTINE DGEEV( JOBVL, JOBVR, N, A, LDA, WR, WI, VL, LDVL, VR, &
+        LDVR, WORK, LWORK, INFO )
+    import :: dp
+    CHARACTER          JOBVL, JOBVR
+    INTEGER            INFO, LDA, LDVL, LDVR, LWORK, N
+    REAL(dp)           A( LDA, * ), VL( LDVL, * ), VR( LDVR, * ), WI( * ), &
+                       WORK( * ), WR( * )
+    END SUBROUTINE
+
+    SUBROUTINE DGEEVX( BALANC, JOBVL, JOBVR, SENSE, N, A, LDA, WR, WI, &
+        VL, LDVL, VR, LDVR, ILO, IHI, SCALE, ABNRM, &
+        RCONDE, RCONDV, WORK, LWORK, IWORK, INFO )
+    import :: dp
+    CHARACTER          BALANC, JOBVL, JOBVR, SENSE
+    INTEGER            IHI, ILO, INFO, LDA, LDVL, LDVR, LWORK, N
+    REAL(dp)           ABNRM
+    INTEGER            IWORK( * )
+    REAL(DP)           A( LDA, * ), RCONDE( * ), RCONDV( * ), &
+                       SCALE( * ), VL( LDVL, * ), VR( LDVR, * ), &
+                       WI( * ), WORK( * ), WR( * )
+    END SUBROUTINE
+
+    SUBROUTINE ZGEEV( JOBVL, JOBVR, N, A, LDA, W, VL, LDVL, VR, LDVR, &
+        WORK, LWORK, RWORK, INFO )
+    import :: dp
+    CHARACTER          JOBVL, JOBVR
+    INTEGER            INFO, LDA, LDVL, LDVR, LWORK, N
+    REAL(dp)           RWORK( * )
+    COMPLEX(dp)        A( LDA, * ), VL( LDVL, * ), VR( LDVR, * ), W( * ), &
+                       WORK( * )
+    END SUBROUTINE
+
+    SUBROUTINE ZGEEVX( BALANC, JOBVL, JOBVR, SENSE, N, A, LDA, W, VL, &
+        LDVL, VR, LDVR, ILO, IHI, SCALE, ABNRM, RCONDE, &
+        RCONDV, WORK, LWORK, RWORK, INFO )
+    import :: dp
+    CHARACTER          BALANC, JOBVL, JOBVR, SENSE
+    INTEGER            IHI, ILO, INFO, LDA, LDVL, LDVR, LWORK, N
+    REAL(DP)           ABNRM
+    REAL(DP)           RCONDE( * ), RCONDV( * ), RWORK( * ), SCALE( * )
+    COMPLEX(DP)        A( LDA, * ), VL( LDVL, * ), VR( LDVR, * ), W( * ), &
+                       WORK( * )
     END SUBROUTINE
 
     SUBROUTINE DSYGVD( ITYPE, JOBZ, UPLO, N, A, LDA, B, LDB, W, WORK, &
