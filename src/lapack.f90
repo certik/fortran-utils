@@ -21,7 +21,8 @@ interface
     END SUBROUTINE
 
     SUBROUTINE DGESVX( FACT, TRANS, N, NRHS, A, LDA, AF, LDAF, IPIV, &
-        EQUED, R, C, B, LDB, X, LDX, RCOND, FERR, BERR, WORK, IWORK, INFO )
+                       EQUED, R, C, B, LDB, X, LDX, RCOND, FERR, BERR, WORK, &
+                       IWORK, INFO )
     import :: dp
     CHARACTER          EQUED, FACT, TRANS
     INTEGER            INFO, LDA, LDAF, LDB, LDX, N, NRHS
@@ -39,8 +40,8 @@ interface
     END SUBROUTINE
 
     SUBROUTINE ZGESVX( FACT, TRANS, N, NRHS, A, LDA, AF, LDAF, IPIV, &
-        EQUED, R, C, B, LDB, X, LDX, RCOND, FERR, BERR, &
-        WORK, RWORK, INFO )
+                       EQUED, R, C, B, LDB, X, LDX, RCOND, FERR, BERR, &
+                       WORK, RWORK, INFO )
     import :: dp
     CHARACTER          EQUED, FACT, TRANS
     INTEGER            INFO, LDA, LDAF, LDB, LDX, N, NRHS
@@ -67,8 +68,8 @@ interface
     END SUBROUTINE
 
     SUBROUTINE DSYSVX( FACT, UPLO, N, NRHS, A, LDA, AF, LDAF, IPIV, B, &
-        LDB, X, LDX, RCOND, FERR, BERR, WORK, LWORK, &
-        IWORK, INFO )
+                       LDB, X, LDX, RCOND, FERR, BERR, WORK, LWORK, &
+                       IWORK, INFO )
     import :: dp
     CHARACTER          FACT, UPLO
     INTEGER            INFO, LDA, LDAF, LDB, LDX, LWORK, N, NRHS
@@ -100,7 +101,7 @@ interface
     END SUBROUTINE
 
     SUBROUTINE DGGEV( JOBVL, JOBVR, N, A, LDA, B, LDB, ALPHAR, ALPHAI, &
-        BETA, VL, LDVL, VR, LDVR, WORK, LWORK, INFO )
+                      BETA, VL, LDVL, VR, LDVR, WORK, LWORK, INFO )
     import :: dp
     CHARACTER          JOBVL, JOBVR
     INTEGER            INFO, LDA, LDB, LDVL, LDVR, LWORK, N
@@ -110,8 +111,9 @@ interface
     END SUBROUTINE
 
     SUBROUTINE DGGEVX( BALANC, JOBVL, JOBVR, SENSE, N, A, LDA, B, LDB, &
-        ALPHAR, ALPHAI, BETA, VL, LDVL, VR, LDVR, ILO, IHI, LSCALE, RSCALE, &
-        ABNRM, BBNRM, RCONDE, RCONDV, WORK, LWORK, IWORK, BWORK, INFO )
+                       ALPHAR, ALPHAI, BETA, VL, LDVL, VR, LDVR, ILO, IHI, &
+                       LSCALE, RSCALE, ABNRM, BBNRM, RCONDE, RCONDV, WORK, &
+                       LWORK, IWORK, BWORK, INFO )
     import :: dp
     CHARACTER          BALANC, JOBVL, JOBVR, SENSE
     INTEGER            IHI, ILO, INFO, LDA, LDB, LDVL, LDVR, LWORK, N
@@ -124,7 +126,7 @@ interface
     END SUBROUTINE
 
     SUBROUTINE DGEEV( JOBVL, JOBVR, N, A, LDA, WR, WI, VL, LDVL, VR, &
-        LDVR, WORK, LWORK, INFO )
+                      LDVR, WORK, LWORK, INFO )
     import :: dp
     CHARACTER          JOBVL, JOBVR
     INTEGER            INFO, LDA, LDVL, LDVR, LWORK, N
@@ -133,8 +135,8 @@ interface
     END SUBROUTINE
 
     SUBROUTINE DGEEVX( BALANC, JOBVL, JOBVR, SENSE, N, A, LDA, WR, WI, &
-        VL, LDVL, VR, LDVR, ILO, IHI, SCALE, ABNRM, &
-        RCONDE, RCONDV, WORK, LWORK, IWORK, INFO )
+                       VL, LDVL, VR, LDVR, ILO, IHI, SCALE, ABNRM, &
+                       RCONDE, RCONDV, WORK, LWORK, IWORK, INFO )
     import :: dp
     CHARACTER          BALANC, JOBVL, JOBVR, SENSE
     INTEGER            IHI, ILO, INFO, LDA, LDVL, LDVR, LWORK, N
@@ -146,7 +148,7 @@ interface
     END SUBROUTINE
 
     SUBROUTINE ZGEEV( JOBVL, JOBVR, N, A, LDA, W, VL, LDVL, VR, LDVR, &
-        WORK, LWORK, RWORK, INFO )
+                      WORK, LWORK, RWORK, INFO )
     import :: dp
     CHARACTER          JOBVL, JOBVR
     INTEGER            INFO, LDA, LDVL, LDVR, LWORK, N
@@ -156,8 +158,8 @@ interface
     END SUBROUTINE
 
     SUBROUTINE ZGEEVX( BALANC, JOBVL, JOBVR, SENSE, N, A, LDA, W, VL, &
-        LDVL, VR, LDVR, ILO, IHI, SCALE, ABNRM, RCONDE, &
-        RCONDV, WORK, LWORK, RWORK, INFO )
+                       LDVL, VR, LDVR, ILO, IHI, SCALE, ABNRM, RCONDE, &
+                       RCONDV, WORK, LWORK, RWORK, INFO )
     import :: dp
     CHARACTER          BALANC, JOBVL, JOBVR, SENSE
     INTEGER            IHI, ILO, INFO, LDA, LDVL, LDVR, LWORK, N
@@ -168,7 +170,7 @@ interface
     END SUBROUTINE
 
     SUBROUTINE DSYGVD( ITYPE, JOBZ, UPLO, N, A, LDA, B, LDB, W, WORK, &
-        LWORK, IWORK, LIWORK, INFO )
+                       LWORK, IWORK, LIWORK, INFO )
     import :: dp
     CHARACTER          JOBZ, UPLO
     INTEGER            INFO, ITYPE, LDA, LDB, LIWORK, LWORK, N
