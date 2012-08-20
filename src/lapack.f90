@@ -142,7 +142,7 @@ interface
     INTEGER            IHI, ILO, INFO, LDA, LDVL, LDVR, LWORK, N
     REAL(dp)           ABNRM
     INTEGER            IWORK( * )
-    REAL(DP)           A( LDA, * ), RCONDE( * ), RCONDV( * ), &
+    REAL(dp)           A( LDA, * ), RCONDE( * ), RCONDV( * ), &
                        SCALE( * ), VL( LDVL, * ), VR( LDVR, * ), &
                        WI( * ), WORK( * ), WR( * )
     END SUBROUTINE
@@ -163,9 +163,9 @@ interface
     import :: dp
     CHARACTER          BALANC, JOBVL, JOBVR, SENSE
     INTEGER            IHI, ILO, INFO, LDA, LDVL, LDVR, LWORK, N
-    REAL(DP)           ABNRM
-    REAL(DP)           RCONDE( * ), RCONDV( * ), RWORK( * ), SCALE( * )
-    COMPLEX(DP)        A( LDA, * ), VL( LDVL, * ), VR( LDVR, * ), W( * ), &
+    REAL(dp)           ABNRM
+    REAL(dp)           RCONDE( * ), RCONDV( * ), RWORK( * ), SCALE( * )
+    COMPLEX(dp)        A( LDA, * ), VL( LDVL, * ), VR( LDVR, * ), W( * ), &
                        WORK( * )
     END SUBROUTINE
 
