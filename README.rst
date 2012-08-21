@@ -28,6 +28,13 @@ Main features:
 * Lapack interface (and a few simple f90 wrappers like ``eigh``, ``inv``)
 * HDF5 interface
 
+Requirements
+------------
+
+The modules utils and ppm in ``utils.f90`` and ``ppm.f90`` use the
+``newunit`` option to ``open()``. This option is part of Fortran 2008 and
+requires at least gfortran 4.5 to compile.
+
 Contributors
 ------------
 
