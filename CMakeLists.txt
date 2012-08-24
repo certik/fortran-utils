@@ -25,6 +25,14 @@ if (NOT (CMAKE_BUILD_TYPE STREQUAL "Debug" OR
 endif ()
 
 if (CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")
+    execute_process(COMMAND ${CMAKE_Fortran_COMPILER} -dumpversion
+                        OUTPUT_VARIABLE GCC_VERSION)
+    if (GCC_VERSION VERSION_LESS 4.5)
+        set(common "-std=f2008 -Wall -Wextra -Wimplicit-interface -fPIC -Werror -fmax-errors=1")
+        set(CMAKE_Fortran_FLAGS_RELEASE "${common} -O3 -march=native -ffast-math -funroll-loops")
+        set(CMAKE_Fortran_FLAGS_DEBUG   "${common} -g -fbounds-check -fcheck-array-temporaries -fbacktrace")
+    endif()
+
     # gfortran
     # Enable this if you want to check for single/double corruption (and use
     # the Debug build):
