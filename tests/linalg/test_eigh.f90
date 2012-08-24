@@ -8,7 +8,7 @@ implicit none
 ! test eigenvalue computation for symmetric/hermitian matrices:
 
 real(dp), parameter :: eps = 1e-9_dp
-real(dp) :: A(2, 2), B(2, 2), lam(2), c(2, 2), r(2), n 
+real(dp) :: A(2, 2), B(2, 2), lam(2), c(2, 2), r(2), n
 complex(dp) :: AC(2, 2), BC(2, 2), cc(2, 2)
 complex(dp) :: rc(2), nc
 integer :: i
@@ -16,7 +16,7 @@ integer :: i
 A = reshape([1, 0, 0, -1], [2, 2])
 B = reshape([1, 0, 0, 1], [2, 2])
 
-! test generalized eigenvalue problem with real symmetric matrices: 
+! test generalized eigenvalue problem with real symmetric matrices:
 call eigh(A, B, lam, c)
 ! Test eigenvalues:
 call assert(all(abs(lam - [-1, 1]) < eps))
