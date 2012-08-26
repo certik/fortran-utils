@@ -16,8 +16,8 @@ module linalg
 
   ! eigenvalue/-vector problem for real symmetric/complex hermitian matrices:
   interface eigh
-     module procedure eigh_generalized
-     module procedure eigh_simple
+     module procedure deigh_generalized
+     module procedure deigh_simple
      module procedure zeigh_generalized
      module procedure zeigh_simple
   end interface eigh
@@ -47,7 +47,7 @@ module linalg
 
 contains
 
-  ! TODO: add optional switch for left or right eigenvectors in deig() and zeig()
+  ! TODO: add optional switch for left or right eigenvectors in deig() and zeig()?
   subroutine deig(A, lam, c)
     real(dp), intent(in) :: A(:, :)  ! matrix for eigenvalue compuation
     complex(dp), intent(out) :: lam(:)  ! eigenvalues: A c = lam c
@@ -101,7 +101,7 @@ contains
     ! LAPACK variables:
     integer :: info, lda, ldvl, ldvr, lwork, n, lrwork
     real(dp), allocatable :: rwork(:)
-    complex(dp), allocatable :: At(:,:), vl(:,:), vr(:,:), work(:)
+    complex(dp), allocatable :: vl(:,:), vr(:,:), work(:)
 
     lda = size(A(:,1))
     n = size(A(1,:))
@@ -109,9 +109,9 @@ contains
     ldvr = n
     lwork = 8*n  ! TODO: can this size be optimized? query first?
     lrwork = 2*n
-    allocate(At(lda,n), vl(ldvl,n), vr(ldvr,n), work(lwork), rwork(lrwork))
-    At = A
-    call zgeev('N', 'V', n, At, lda, lam, vl, ldvl, vr, ldvr, work, &
+    allocate(vl(ldvl,n), vr(ldvr,n), work(lwork), rwork(lrwork))
+    c = A
+    call zgeev('N', 'V', n, c, lda, lam, vl, ldvl, vr, ldvr, work, &
          lwork, rwork, info)
     if(info /= 0) then
        print *, "zgeev returned info = ", info
@@ -193,7 +193,7 @@ contains
     end if
   end function zeigvals
 
-  subroutine eigh_generalized(Am, Bm, lam, c)
+  subroutine deigh_generalized(Am, Bm, lam, c)
     ! solves generalized eigen value problem for all eigenvalues and eigenvectors
     ! Am must by symmetric, Bm symmetric positive definite.
     ! Only the lower triangular part of Am and Bm is used.
@@ -204,16 +204,16 @@ contains
     integer :: n
     ! lapack variables
     integer :: lwork, liwork, info
-    integer, allocatable:: iwork(:)
-    real(dp), allocatable:: Amt(:,:), Bmt(:,:), work(:)
+    integer, allocatable :: iwork(:)
+    real(dp), allocatable :: Bmt(:,:), work(:)
 
     ! solve
     n = size(Am,1)
     lwork = 1 + 6*n + 2*n**2
     liwork = 3 + 5*n
-    allocate(Amt(n,n), Bmt(n,n), work(lwork), iwork(liwork))
-    Amt = Am; Bmt = Bm  ! Amt,Bmt temporaries overwritten by dsygvd
-    call dsygvd(1,'V','L',n,Amt,n,Bmt,n,lam,work,lwork,iwork,liwork,info)
+    allocate(Bmt(n,n), work(lwork), iwork(liwork))
+    c = Am; Bmt = Bm  ! Bmt temporaries overwritten by dsygvd
+    call dsygvd(1,'V','L',n,c,n,Bmt,n,lam,work,lwork,iwork,liwork,info)
     if (info /= 0) then
        print *, "dsygvd returned info =", info
        if (info < 0) then
@@ -229,10 +229,9 @@ contains
        end if
        call stop_error('eigh: dsygvd error')
     end if
-    c = Amt
-  end subroutine eigh_generalized
+  end subroutine deigh_generalized
 
-  subroutine eigh_simple(Am, lam, c)
+  subroutine deigh_simple(Am, lam, c)
     ! solves eigen value problem for all eigenvalues and eigenvectors
     ! Am must by symmetric
     ! Only the lower triangular part of Am is used.
@@ -242,16 +241,16 @@ contains
     integer :: n
     ! lapack variables
     integer :: lwork, liwork, info
-    integer, allocatable:: iwork(:)
-    real(dp), allocatable:: Amt(:,:), work(:)
+    integer, allocatable :: iwork(:)
+    real(dp), allocatable :: work(:)
 
     ! solve
     n = size(Am,1)
     lwork = 1 + 6*n + 2*n**2
     liwork = 3 + 5*n
-    allocate(Amt(n,n), work(lwork), iwork(liwork))
-    Amt = Am; ! Amt temporary overwritten by dsyevd
-    call dsyevd('V','L',n,Amt,n,lam,work,lwork,iwork,liwork,info)
+    allocate(work(lwork), iwork(liwork))
+    c = Am
+    call dsyevd('V','L',n,c,n,lam,work,lwork,iwork,liwork,info)
     if (info /= 0) then
        print *, "dsyevd returned info =", info
        if (info < 0) then
@@ -263,8 +262,7 @@ contains
        end if
        call stop_error('eigh: dsyevd error')
     end if
-    c = Amt
-  end subroutine eigh_simple
+  end subroutine deigh_simple
 
   subroutine zeigh_generalized(Am, Bm, lam, c)
     ! solves generalized eigen value problem for all eigenvalues and eigenvectors
@@ -278,16 +276,16 @@ contains
     integer :: info, liwork, lrwork, lwork, n
     integer, allocatable :: iwork(:)
     real(dp), allocatable :: rwork(:)
-    complex(dp), allocatable :: Amt(:,:), Bmt(:,:), work(:)
+    complex(dp), allocatable :: Bmt(:,:), work(:)
 
     ! solve
     n = size(Am,1)
     lwork = 2*n + n**2
     lrwork = 1 + 5*N + 2*n**2
     liwork = 3 + 5*n
-    allocate(Amt(n,n), Bmt(n,n), work(lwork), rwork(lrwork), iwork(liwork))
-    Amt = Am; Bmt = Bm  ! Amt, Bmt temporaries overwritten by zhegvd
-    call zhegvd(1,'V','L',n,Amt,n,Bmt,n,lam,work,lwork,rwork,lrwork,iwork,liwork,info)
+    allocate(Bmt(n,n), work(lwork), rwork(lrwork), iwork(liwork))
+    c = Am; Bmt = Bm  ! Bmt temporary overwritten by zhegvd
+    call zhegvd(1,'V','L',n,c,n,Bmt,n,lam,work,lwork,rwork,lrwork,iwork,liwork,info)
     if (info /= 0) then
        print *, "zhegvd returned info =", info
        if (info < 0) then
@@ -303,7 +301,6 @@ contains
        end if
        call stop_error('eigh: zhegvd error')
     end if
-    c = Amt
   end subroutine zeigh_generalized
 
   subroutine zeigh_simple(Am, lam, c)
@@ -317,18 +314,17 @@ contains
     integer :: info, lda, liwork, lrwork, lwork, n
     integer, allocatable :: iwork(:)
     real(dp), allocatable :: rwork(:)
-    complex(dp), allocatable :: Amt(:, :), work(:)
+    complex(dp), allocatable :: work(:)
 
-    ! use LAPACK's ZHEEVD routine
+    ! use LAPACK's zheevd routine
     n = size(Am, 1)
     lda = max(1, n)
     lwork = 2*n + n**2
     lrwork = 1 + 5*n + 2*n**2
     liwork = 3 + 5*n
-    allocate(Amt(lda,n), work(lwork), rwork(lrwork), &
-         iwork(liwork))
-    Amt = Am
-    call ZHEEVD("V", "L", n, Amt, lda, lam, work, lwork, rwork, lrwork, &
+    allocate(work(lwork), rwork(lrwork), iwork(liwork))
+    c = Am
+    call zheevd("V", "L", n, c, lda, lam, work, lwork, rwork, lrwork, &
          iwork, liwork, info)
     if (info /= 0) then
        print *, "zheevd returned info =", info
@@ -341,8 +337,6 @@ contains
        end if
        call stop_error('eigh: zheevd error')
     end if
-
-    c = Amt
   end subroutine zeigh_simple
 
   function dinv(Am) result(Bm)
