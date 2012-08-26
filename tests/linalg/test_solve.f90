@@ -1,4 +1,4 @@
-program test_eig
+program test_solve
 use types, only: dp
 use utils, only: assert
 use linalg, only: solve, eye

@@ -15,12 +15,12 @@ integer :: i
 ! test a matrix with complex eigenvalues/eigenvectors:
 A = reshape([1, -1, 2, 1], shape=[2, 2])  ! lambda_i = 1 \pm \sqrt(2) i
 call eig(A, lam, c)
-! TODO: add test for correctness eigenvalues
+! TODO: add test for correctness of eigenvalues
 do i = 1, 2
     ! Test proper norm of eigenvectors:
     n = dot_product(c(:,i), c(:,i))
     call assert(abs(n - 1) < eps)
-    ! Test that c(:, i) are eigenvectors:
+    ! Test that c(:, i) is an eigenvector with eigenvalue lam(i):
     r = matmul(A-lam(i)*cmplx(eye(2)), c(:, i))
     call assert(sqrt(abs(dot_product(r, r))) < eps)
 end do
@@ -39,7 +39,7 @@ do i = 1, 2
     ! Test proper norm of eigenvectors:
     n = dot_product(c(:,i), c(:,i))
     call assert(abs(n - 1) < eps)
-    ! Test that c(:, i) are eigenvectors:
+    ! Test that c(:, i) is an eigenvector with eigenvalue lam(i):
     r = matmul(AC-lam(i)*cmplx(eye(2)), c(:, i))
     call assert(sqrt(abs(dot_product(r, r))) < eps)
 end do

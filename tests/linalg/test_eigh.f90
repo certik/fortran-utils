@@ -1,4 +1,4 @@
-program test_eig
+program test_eigh
 use types, only: dp
 use utils, only: assert
 use linalg, only: eigh, eye
@@ -21,7 +21,7 @@ call eigh(A, B, lam, c)
 ! Test eigenvalues:
 call assert(all(abs(lam - [-1, 1]) < eps))
 do i = 1, 2
-    ! Test that c(:, i) are eigenvectors:
+    ! Test that c(:, i) is an eigenvector with eigenvalue lam(i):
     r = matmul(A-lam(i)*B, c(:, i))
     call assert(sqrt(dot_product(r, r)) < eps)
     ! Test that eigenvectors are properly normalized:
@@ -34,7 +34,7 @@ call eigh(A, lam, c)
 ! Test eigenvalues:
 call assert(all(abs(lam - [-1, 1]) < eps))
 do i = 1, 2
-    ! Test that c(:, i) are eigenvectors:
+    ! Test that c(:, i) is an eigenvector with eigenvalue lam(i):
     r = matmul(A, c(:, i)) - lam(i) * c(:, i)
     call assert(sqrt(dot_product(r, r)) < eps)
     ! Test that eigenvectors are properly normalized:

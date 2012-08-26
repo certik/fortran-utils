@@ -1,4 +1,4 @@
-program test_eig
+program test_eigvals
 use types, only: dp
 use utils, only: assert
 use linalg, only: eigvals, eye
