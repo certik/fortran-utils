@@ -1,12 +1,12 @@
 module linalg
   use types, only: dp
   use lapack, only: dsyevd, dsygvd, ilaenv, zgetri, zgetrf, zheevd, &
-       dgeev, zgeev, zhegvd, dgesv, zgesv, dgetrf, dgetri
+       dgeev, zgeev, zhegvd, dgesv, zgesv, dgetrf, dgetri, dgelsy, zgelsy
   use utils, only: stop_error
   use constants, only: i_
   implicit none
   private
-  public eig, eigvals, eigh, inv, solve, eye, det
+  public eig, eigvals, eigh, inv, solve, eye, det, lstsq
 
   ! eigenvalue/-vector problem for general matrices:
   interface eig
@@ -44,6 +44,11 @@ module linalg
      module procedure ddet
      module procedure zdet
   end interface det
+
+  interface lstsq
+     module procedure dlstsq
+     module procedure zlstsq
+  end interface lstsq
 
 contains
 
@@ -351,7 +356,7 @@ contains
     ! use LAPACK's dgetrf and dgetri
     n = size(Am(1, :))
     lda = n
-    nb = ilaenv(1, 'DGETRI', "UN", n, -1, -1, -1)
+    nb = ilaenv(1, 'DGETRI', "UN", n, -1, -1, -1)  ! TODO: check UN param
     lwork = n*nb
     if (nb < 1) nb = max(1, n)
     allocate(Amt(n,n), work(lwork), ipiv(n))
@@ -396,7 +401,7 @@ contains
     integer, allocatable:: ipiv(:)
 
     n = size(Am, 1)
-    nb = ilaenv(1, 'ZGETRI', "UN", n, -1, -1, -1)
+    nb = ilaenv(1, 'ZGETRI', "UN", n, -1, -1, -1)  ! TODO: urgently check UN param
     if (nb < 1) nb = max(1, n)
     lwork = n*nb
     allocate(Amt(n,n), ipiv(n), work(lwork))
@@ -578,5 +583,72 @@ contains
        endif
     end do
   end function zdet
+
+  function dlstsq(A, b) result(x)
+    ! compute least square solution to A x = b for real A, b
+    real(dp), intent(in) :: A(:,:), b(:)
+    real(dp), allocatable :: x(:)
+    ! LAPACK variables:
+    integer :: info, ldb, lwork, m, n, rank
+    real(dp) :: rcond
+    real(dp), allocatable :: work(:), At(:,:), Bt(:,:)
+    integer, allocatable :: jpvt(:)
+
+    m = size(A(:,1)) ! = lda
+    n = size(A(1,:))
+    ldb = size(b)
+    allocate(x(n), At(m,n), Bt(ldb,1), jpvt(n), work(1))
+    call dgelsy(m, n, 1, At, m, Bt, ldb, jpvt, rcond, rank, work, &
+         -1, info)  ! query optimal workspace size
+    lwork = int(real(work(1)))
+    deallocate(work)
+    allocate(work(lwork))  ! allocate with ideal size
+    rcond = 0.0_dp
+    jpvt(:) = 0
+    Bt(:,1) = b(:)  ! only one right-hand side
+    At(:,:) = A(:,:)
+    call dgelsy(m, n, 1, At, m, Bt, ldb, jpvt, rcond, rank, work, &
+         lwork, info)
+    if(info /= 0) then
+       print *, "dgelsy returned info = ", info
+       print *, "the ", -info, "-th argument had an illegal value"
+       call stop_error('lstsq: dgelsy error')
+    endif
+    x(:) = Bt(1:n,1)
+  end function dlstsq
+
+  function zlstsq(A, b) result(x)
+    ! compute least square solution to A x = b for complex A, b
+    complex(dp), intent(in) :: A(:,:), b(:)
+    complex(dp), allocatable :: x(:)
+    ! LAPACK variables:
+    integer :: info, ldb, lwork, m, n, rank
+    real(dp) :: rcond
+    complex(dp), allocatable :: At(:,:), Bt(:,:), work(:)
+    real(dp), allocatable :: rwork(:)
+    integer, allocatable :: jpvt(:)
+
+    m = size(A(:,1)) ! = lda
+    n = size(A(1,:))
+    ldb = size(b)
+    allocate(x(n), At(m,n), Bt(ldb,1), jpvt(n), work(1), rwork(2*n))
+    call zgelsy(m, n, 1, At, m, Bt, ldb, jpvt, rcond, rank, work, &
+         -1, rwork, info)  ! query optimal workspace size
+    lwork = int(real(work(1)))
+    deallocate(work)
+    allocate(work(lwork))  ! allocate with ideal size
+    rcond = 0.0_dp
+    jpvt(:) = 0
+    Bt(:,1) = b(:)  ! only one right-hand side
+    At(:,:) = A(:,:)
+    call zgelsy(m, n, 1, At, m, Bt, ldb, jpvt, rcond, rank, work, &
+         lwork, rwork, info)
+    if(info /= 0) then
+       print *, "zgelsy returned info = ", info
+       print *, "the ", -info, "-th argument had an illegal value"
+       call stop_error('lstsq: zgelsy error')
+    endif
+    x(:) = Bt(1:n,1)
+  end function zlstsq
 
 end module linalg

@@ -206,14 +206,14 @@ interface
     import :: dp
     INTEGER            INFO, LDA, M, N
     INTEGER            IPIV( * )
-    REAL(dp)            A( LDA, * )
+    REAL(dp)           A( LDA, * )
     END SUBROUTINE
 
     SUBROUTINE DGETRI( N, A, LDA, IPIV, WORK, LWORK, INFO )
     import :: dp
     INTEGER            INFO, LDA, LWORK, N
     INTEGER            IPIV( * )
-    REAL(dp)            A( LDA, * ), WORK( * )
+    REAL(dp)           A( LDA, * ), WORK( * )
     END SUBROUTINE
 
     SUBROUTINE ZHEEV( JOBZ, UPLO, N, A, LDA, W, WORK, LWORK, RWORK, INFO )
@@ -225,25 +225,43 @@ interface
     END SUBROUTINE
 
     SUBROUTINE ZHEEVD( JOBZ, UPLO, N, A, LDA, W, WORK, LWORK, RWORK, &
-                         LRWORK, IWORK, LIWORK, INFO )
+                       LRWORK, IWORK, LIWORK, INFO )
     import :: dp
-    CHARACTER           JOBZ, UPLO
-    INTEGER             INFO, LDA, LIWORK, LRWORK, LWORK, N
-    INTEGER             IWORK( * )
-    REAL(dp)            RWORK( * ), W( * )
-    COMPLEX(dp)         A( LDA, * ), WORK( * )
+    CHARACTER          JOBZ, UPLO
+    INTEGER            INFO, LDA, LIWORK, LRWORK, LWORK, N
+    INTEGER            IWORK( * )
+    REAL(dp)           RWORK( * ), W( * )
+    COMPLEX(dp)        A( LDA, * ), WORK( * )
     END SUBROUTINE
 
     SUBROUTINE ZHEGVD( ITYPE,  JOBZ,  UPLO,  N,  A,  LDA,  B, LDB, W, &
-                         WORK, LWORK, RWORK, LRWORK, IWORK, LIWORK, &
-                         INFO )
+                       WORK, LWORK, RWORK, LRWORK, IWORK, LIWORK, &
+                       INFO )
     import :: dp
-    CHARACTER           JOBZ, UPLO
-    INTEGER             INFO, ITYPE, LDA, LDB, LIWORK, LRWORK, LWORK, N
-    INTEGER             IWORK( * )
-    REAL(dp)             RWORK( * ), W( * )
+    CHARACTER          JOBZ, UPLO
+    INTEGER            INFO, ITYPE, LDA, LDB, LIWORK, LRWORK, LWORK, N
+    INTEGER            IWORK( * )
+    REAL(dp)           RWORK( * ), W( * )
+    COMPLEX(dp)        A( LDA, * ), B( LDB, * ), WORK( * )
+    END SUBROUTINE
 
-    COMPLEX(dp)          A( LDA, * ), B( LDB, * ), WORK( * )
+    SUBROUTINE DGELSY( M, N, NRHS, A, LDA, B, LDB, JPVT, RCOND, RANK, &
+                       WORK, LWORK, INFO )
+    import :: dp
+    INTEGER            INFO, LDA, LDB, LWORK, M, N, NRHS, RANK
+    REAL(dp)           RCOND
+    INTEGER            JPVT( * )
+    REAL(dp)           A( LDA, * ), B( LDB, * ), WORK( * )
+    END SUBROUTINE
+
+    SUBROUTINE ZGELSY( M, N, NRHS, A, LDA, B, LDB, JPVT, RCOND, RANK, &
+                       WORK, LWORK, RWORK, INFO )
+    import :: dp
+    INTEGER            INFO, LDA, LDB, LWORK, M, N, NRHS, RANK
+    REAL(dp)           RCOND
+    INTEGER            JPVT( * )
+    REAL(dp)           RWORK( * )
+    COMPLEX(dp)        A( LDA, * ), B( LDB, * ), WORK( * )
     END SUBROUTINE
 
 end interface
