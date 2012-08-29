@@ -1,12 +1,14 @@
 module linalg
   use types, only: dp
   use lapack, only: dsyevd, dsygvd, ilaenv, zgetri, zgetrf, zheevd, &
-       dgeev, zgeev, zhegvd, dgesv, zgesv, dgetrf, dgetri, dgelsy, zgelsy
+       dgeev, zgeev, zhegvd, dgesv, zgesv, dgetrf, dgetri, dgelsy, zgelsy, &
+       dgesvd, zgesvd
   use utils, only: stop_error
   use constants, only: i_
   implicit none
   private
-  public eig, eigvals, eigh, inv, solve, eye, det, lstsq, diag, trace
+  public eig, eigvals, eigh, inv, solve, eye, det, lstsq, diag, trace, &
+       svdvals, svd
 
   ! eigenvalue/-vector problem for general matrices:
   interface eig
@@ -40,25 +42,41 @@ module linalg
      module procedure zsolve
   end interface solve
 
+  ! determinants of real/complex square matrices:
   interface det
      module procedure ddet
      module procedure zdet
   end interface det
 
+  ! least square solutions the real/complex systems of equations of possibly non-square shape:
   interface lstsq
      module procedure dlstsq
      module procedure zlstsq
   end interface lstsq
 
+  ! construction of square matrices from the diagonal elements:
   interface diag
      module procedure ddiag
      module procedure zdiag
   end interface diag
 
+  ! trace of real/complex matrices:
   interface trace
      module procedure dtrace
      module procedure ztrace
   end interface trace
+
+  ! singular values of real/complex matrices:
+  interface svdvals
+     module procedure dsvdvals
+     module procedure zsvdvals
+  end interface svdvals
+
+  ! singular value decomposition of real/complex matrices:
+  interface svd
+     module procedure dsvd
+     module procedure zsvd
+  end interface svd
 
 contains
 
@@ -711,5 +729,168 @@ contains
        t = t + A(i,i)
     end do
   end function ztrace
+
+  function dsvdvals(A) result(s)
+    ! compute singular values s_i of a real m x n matrix A
+    real(dp), intent(in) :: A(:,:)
+    real(dp), allocatable :: s(:)
+    ! LAPACK related:
+    integer :: info, lwork, m, n
+    real(dp), allocatable :: work(:)
+    real(dp) :: u(1,1), vt(1,1)  ! not used if only s is to be computed
+
+    m = size(A(:,1))  ! = lda
+    n = size(A(1,:))
+
+    allocate(s(min(m,n)))
+
+    ! query optimal lwork and allocate workspace:
+    allocate(work(1))
+    call dgesvd('N', 'N', m, n, A, m, s, u, 1, vt, 1, work, -1, info)
+    lwork = int(real(work(1)))
+    deallocate(work)
+    allocate(work(lwork))
+
+    call dgesvd('N', 'N', m, n, A, m, s, u, 1, vt, 1, work, lwork, info)
+    if(info /= 0) then
+       print *, "dgesvd returned info = ", info
+       if(info < 0) then
+          print *, "the ", -info, "-th argument had an illegal value"
+       else
+          print *, "DBDSQR did not converge, there are ", info
+          print *, "superdiagonals of an intermediate bidiagonal form B"
+          print *, "did not converge to zero. See the description of WORK"
+          print *, "in DGESVD's man page for details."
+       endif
+       call stop_error('svdvals: dgesvd error')
+    endif
+  end function dsvdvals
+
+  function zsvdvals(A) result(s)
+    ! compute singular values s_i of a real m x n matrix A
+    complex(dp), intent(in) :: A(:,:)
+    real(dp), allocatable :: s(:)
+    ! LAPACK related:
+    integer :: info, lwork, m, n, lrwork
+    complex(dp), allocatable :: work(:)
+    real(dp), allocatable :: rwork(:)
+    complex(dp) :: u(1,1), vt(1,1)  ! not used if only s is to be computed
+
+    m = size(A(:,1))  ! = lda
+    n = size(A(1,:))
+    lrwork = 5*min(m,n)
+    allocate(s(min(m,n)), rwork(lrwork))
+
+    ! query optimal lwork and allocate workspace:
+    allocate(work(1))
+    call zgesvd('N', 'N', m, n, A, m, s, u, 1, vt, 1, work, -1, rwork, info)
+    lwork = int(real(work(1)))
+    deallocate(work)
+    allocate(work(lwork))
+
+    call zgesvd('N', 'N', m, n, A, m, s, u, 1, vt, 1, work, lwork, rwork, info)
+    if(info /= 0) then
+       print *, "zgesvd returned info = ", info
+       if(info < 0) then
+          print *, "the ", -info, "-th argument had an illegal value"
+       else
+          print *, "ZBDSQR did not converge, there are ", info
+          print *, "superdiagonals of an intermediate bidiagonal form B"
+          print *, "did not converge to zero. See the description of RWORK"
+          print *, "in ZGESVD's man page for details."
+       endif
+       call stop_error('svdvals: zgesvd error')
+    endif
+  end function zsvdvals
+
+  subroutine dsvd(A, s, U, Vtransp)
+    ! compute the singular value decomposition A = U sigma Vtransp of a
+    ! real m x n matrix A
+    ! U is m x m
+    ! Vtransp is n x n
+    ! s has size min(m, n) --> sigma matrix is (n x m) with sigma_ii = s_i
+    real(dp), intent(in) :: A(:,:)
+    real(dp), intent(out) :: s(:), U(:,:), Vtransp(:,:)
+    ! LAPACK related:
+    integer :: info, lwork, m, n, ldu
+    real(dp), allocatable :: work(:), At(:,:)
+
+    ! TODO: check shapes here and in other routines?
+
+    m = size(A(:,1))  ! = lda
+    n = size(A(1,:))
+    ldu = m
+    allocate(At(m,n))
+    At(:,:) = A(:,:)  ! use a temporary as dgesvd destroys its input
+
+    ! query optimal lwork and allocate workspace:
+    allocate(work(1))
+    call dgesvd('A', 'A', m, n, At, m, s, U, ldu, Vtransp, n, work, -1, info)
+    lwork = int(real(work(1)))
+    deallocate(work)
+    allocate(work(lwork))
+
+    call dgesvd('A', 'A', m, n, At, m, s, U, ldu, Vtransp, n, work, lwork, info)
+    if(info /= 0) then
+       print *, "dgesvd returned info = ", info
+       if(info < 0) then
+          print *, "the ", -info, "-th argument had an illegal value"
+       else
+          print *, "DBDSQR did not converge, there are ", info
+          print *, "superdiagonals of an intermediate bidiagonal form B"
+          print *, "did not converge to zero. See the description of WORK"
+          print *, "in DGESVD's man page for details."
+       endif
+       call stop_error('svd: dgesvd error')
+    endif
+  end subroutine dsvd
+
+  subroutine zsvd(A, s, U, Vtransp)
+    ! compute the singular value decomposition A = U sigma V^H of a
+    ! complex m x m matrix A
+    ! U is m x min(m, n)
+    ! Vtransp is n x n
+    ! sigma is m x n with with sigma_ii = s_i
+    ! note that this routine returns V^H, not V!
+    complex(dp), intent(in) :: A(:,:)
+    real(dp), intent(out) :: s(:)
+    complex(dp), intent(out) :: U(:,:), Vtransp(:,:)
+    ! LAPACK related:
+    integer :: info, lwork, m, n, ldu, lrwork
+    real(dp), allocatable :: rwork(:)
+    complex(dp), allocatable :: work(:), At(:,:)
+
+    ! TODO: check shapes here and in other routines?
+
+    m = size(A(:,1))  ! = lda
+    n = size(A(1,:))
+    ldu = m
+    lrwork = 5*min(m,n)
+    allocate(rwork(lrwork), At(m,n))
+    At(:,:) = A(:,:)  ! use a temporary as zgesvd destroys its input
+
+    ! query optimal lwork and allocate workspace:
+    allocate(work(1))
+    call zgesvd('A', 'A', m, n, At, m, s, U, ldu, Vtransp, n, work, -1,&
+         rwork, info)
+    lwork = int(real(work(1)))
+    deallocate(work)
+    allocate(work(lwork))
+
+    call zgesvd('A', 'A', m, n, At, m, s, U, ldu, Vtransp, n, work, &
+         lwork, rwork, info)
+    if(info /= 0) then
+       print *, "zgesvd returned info = ", info
+       if(info < 0) then
+          print *, "the ", -info, "-th argument had an illegal value"
+       else
+          print *, "ZBDSQR did not converge, there are ", info
+          print *, "superdiagonals of an intermediate bidiagonal form B"
+          print *, "did not converge to zero. See the description of WORK"
+          print *, "in DGESVD's man page for details."
+       endif
+       call stop_error('svd: zgesvd error')
+    endif
+  end subroutine zsvd
 
 end module linalg

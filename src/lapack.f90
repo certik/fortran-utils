@@ -264,6 +264,24 @@ interface
     COMPLEX(dp)        A( LDA, * ), B( LDB, * ), WORK( * )
     END SUBROUTINE
 
+    SUBROUTINE DGESVD( JOBU, JOBVT, M, N, A, LDA, S, U, LDU, VT, &
+                       LDVT, WORK, LWORK, INFO )
+    import :: dp
+    CHARACTER          JOBU, JOBVT
+    INTEGER            INFO, LDA, LDU, LDVT, LWORK, M, N
+    REAL(dp)           A( LDA, * ), S( * ),  U( LDU,  * ), VT( LDVT, * ), &
+                       WORK( * )
+    END SUBROUTINE
+
+    SUBROUTINE ZGESVD( JOBU, JOBVT,  M,  N,  A,  LDA, S, U, LDU, VT, LDVT, &
+                       WORK, LWORK, RWORK, INFO )
+    import :: dp
+    CHARACTER          JOBU, JOBVT
+    INTEGER            INFO, LDA, LDU, LDVT, LWORK, M, N
+    REAL(dp)           RWORK( * ), S( * )
+    COMPLEX(dp)        A( LDA, * ), U( LDU, * ), VT( LDVT, * ), WORK( * )
+    END SUBROUTINE
+
 end interface
 
 contains
