@@ -6,7 +6,7 @@ module linalg
   use constants, only: i_
   implicit none
   private
-  public eig, eigvals, eigh, inv, solve, eye, det, lstsq
+  public eig, eigvals, eigh, inv, solve, eye, det, lstsq, diag, trace
 
   ! eigenvalue/-vector problem for general matrices:
   interface eig
@@ -49,6 +49,16 @@ module linalg
      module procedure dlstsq
      module procedure zlstsq
   end interface lstsq
+
+  interface diag
+     module procedure ddiag
+     module procedure zdiag
+  end interface diag
+
+  interface trace
+     module procedure dtrace
+     module procedure ztrace
+  end interface trace
 
 contains
 
@@ -401,7 +411,7 @@ contains
     integer, allocatable:: ipiv(:)
 
     n = size(Am, 1)
-    nb = ilaenv(1, 'ZGETRI', "UN", n, -1, -1, -1)  ! TODO: urgently check UN param
+    nb = ilaenv(1, 'ZGETRI', "UN", n, -1, -1, -1)  ! TODO: check UN param
     if (nb < 1) nb = max(1, n)
     lwork = n*nb
     allocate(Amt(n,n), ipiv(n), work(lwork))
@@ -650,5 +660,56 @@ contains
     endif
     x(:) = Bt(1:n,1)
   end function zlstsq
+
+  ! TODO: can assumed types help in Xdiag() and Xtrace()?
+  ! TODO: add optional axis parameter in both xdiag() functions
+  function ddiag(x) result(A)
+    ! construct real matrix from diagonal elements
+    real(dp), intent(in) :: x(:)
+    real(dp), allocatable :: A(:,:)
+    integer :: i, n
+
+    n = size(x)
+    allocate(A(n,n))
+    A(:,:) = 0.0_dp
+    forall(i=1:n) A(i,i) = x(i)
+  end function ddiag
+
+  function zdiag(x) result(A)
+    ! construct complex matrix from diagonal elements
+    complex(dp), intent(in) :: x(:)
+    complex(dp), allocatable :: A(:,:)
+    integer :: i, n
+
+    n = size(x)
+    allocate(A(n,n))
+    A(:,:) = 0*i_
+    forall(i=1:n) A(i,i) = x(i)
+  end function zdiag
+
+  ! TODO: add optional axis parameter in both xtrace() functions
+  function dtrace(A) result(t)
+    ! return trace along the main diagonal
+    real(dp), intent(in) :: A(:,:)
+    real(dp) :: t
+    integer :: i
+
+    t = 0.0_dp
+    do i = 1,minval(shape(A))
+       t = t + A(i,i)
+    end do
+  end function dtrace
+
+  function ztrace(A) result(t)
+    ! return trace along the main diagonal
+    complex(dp), intent(in) :: A(:,:)
+    complex(dp) :: t
+    integer :: i
+
+    t = 0*i_
+    do i = 1,minval(shape(A))
+       t = t + A(i,i)
+    end do
+  end function ztrace
 
 end module linalg
