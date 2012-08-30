@@ -202,6 +202,86 @@ interface
     COMPLEX(dp)        A( LDA, * ), WORK( * )
     END SUBROUTINE
 
+    SUBROUTINE DGETRF( M, N, A, LDA, IPIV, INFO )
+    import :: dp
+    INTEGER            INFO, LDA, M, N
+    INTEGER            IPIV( * )
+    REAL(dp)           A( LDA, * )
+    END SUBROUTINE
+
+    SUBROUTINE DGETRI( N, A, LDA, IPIV, WORK, LWORK, INFO )
+    import :: dp
+    INTEGER            INFO, LDA, LWORK, N
+    INTEGER            IPIV( * )
+    REAL(dp)           A( LDA, * ), WORK( * )
+    END SUBROUTINE
+
+    SUBROUTINE ZHEEV( JOBZ, UPLO, N, A, LDA, W, WORK, LWORK, RWORK, INFO )
+    import :: dp
+    CHARACTER          JOBZ, UPLO
+    INTEGER            INFO, LDA, LWORK, N
+    REAL(dp)           RWORK( * ), W( * )
+    COMPLEX(dp)        A( LDA, * ), WORK( * )
+    END SUBROUTINE
+
+    SUBROUTINE ZHEEVD( JOBZ, UPLO, N, A, LDA, W, WORK, LWORK, RWORK, &
+                       LRWORK, IWORK, LIWORK, INFO )
+    import :: dp
+    CHARACTER          JOBZ, UPLO
+    INTEGER            INFO, LDA, LIWORK, LRWORK, LWORK, N
+    INTEGER            IWORK( * )
+    REAL(dp)           RWORK( * ), W( * )
+    COMPLEX(dp)        A( LDA, * ), WORK( * )
+    END SUBROUTINE
+
+    SUBROUTINE ZHEGVD( ITYPE,  JOBZ,  UPLO,  N,  A,  LDA,  B, LDB, W, &
+                       WORK, LWORK, RWORK, LRWORK, IWORK, LIWORK, &
+                       INFO )
+    import :: dp
+    CHARACTER          JOBZ, UPLO
+    INTEGER            INFO, ITYPE, LDA, LDB, LIWORK, LRWORK, LWORK, N
+    INTEGER            IWORK( * )
+    REAL(dp)           RWORK( * ), W( * )
+    COMPLEX(dp)        A( LDA, * ), B( LDB, * ), WORK( * )
+    END SUBROUTINE
+
+    SUBROUTINE DGELSY( M, N, NRHS, A, LDA, B, LDB, JPVT, RCOND, RANK, &
+                       WORK, LWORK, INFO )
+    import :: dp
+    INTEGER            INFO, LDA, LDB, LWORK, M, N, NRHS, RANK
+    REAL(dp)           RCOND
+    INTEGER            JPVT( * )
+    REAL(dp)           A( LDA, * ), B( LDB, * ), WORK( * )
+    END SUBROUTINE
+
+    SUBROUTINE ZGELSY( M, N, NRHS, A, LDA, B, LDB, JPVT, RCOND, RANK, &
+                       WORK, LWORK, RWORK, INFO )
+    import :: dp
+    INTEGER            INFO, LDA, LDB, LWORK, M, N, NRHS, RANK
+    REAL(dp)           RCOND
+    INTEGER            JPVT( * )
+    REAL(dp)           RWORK( * )
+    COMPLEX(dp)        A( LDA, * ), B( LDB, * ), WORK( * )
+    END SUBROUTINE
+
+    SUBROUTINE DGESVD( JOBU, JOBVT, M, N, A, LDA, S, U, LDU, VT, &
+                       LDVT, WORK, LWORK, INFO )
+    import :: dp
+    CHARACTER          JOBU, JOBVT
+    INTEGER            INFO, LDA, LDU, LDVT, LWORK, M, N
+    REAL(dp)           A( LDA, * ), S( * ),  U( LDU,  * ), VT( LDVT, * ), &
+                       WORK( * )
+    END SUBROUTINE
+
+    SUBROUTINE ZGESVD( JOBU, JOBVT,  M,  N,  A,  LDA, S, U, LDU, VT, LDVT, &
+                       WORK, LWORK, RWORK, INFO )
+    import :: dp
+    CHARACTER          JOBU, JOBVT
+    INTEGER            INFO, LDA, LDU, LDVT, LWORK, M, N
+    REAL(dp)           RWORK( * ), S( * )
+    COMPLEX(dp)        A( LDA, * ), U( LDU, * ), VT( LDVT, * ), WORK( * )
+    END SUBROUTINE
+
 end interface
 
 contains
