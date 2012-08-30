@@ -14,17 +14,17 @@ real(dp) :: t1, t2
 allocate(x(5), y(5))
 x = [0._dp, 1._dp, 2._dp, 3._dp, 4._dp]
 y = [0._dp, 1._dp, 2._dp, 3._dp, 4._dp]
-call assert(all(interp(x, y, [0._dp]) == [0._dp]))
-call assert(all(interp(x, y, [0._dp, 0.5_dp, 1._dp, 10._dp]) == &
+call assert(all(spline3(x, y, [0._dp]) == [0._dp]))
+call assert(all(spline3(x, y, [0._dp, 0.5_dp, 1._dp, 10._dp]) == &
         [0._dp, 0.5_dp, 1._dp, 10._dp]))
-call assert(all(interp(x, y, [10._dp, 1._dp, 0._dp, 0.5_dp, 1._dp, 10._dp]) == &
+call assert(all(spline3(x, y, [10._dp, 1._dp, 0._dp, 0.5_dp, 1._dp, 10._dp]) == &
         [10._dp, 1._dp, 0._dp, 0.5_dp, 1._dp, 10._dp]))
 
 x = linspace(0.0_dp, pi, 5)
 y = sin(x)
 allocate(x2(100))
 x2 = linspace(0.0_dp, pi, 100)
-call assert(maxval(abs(interp(x, y, x2) - sin(x2))) < 1.2e-2_dp)
+call assert(maxval(abs(spline3(x, y, x2) - sin(x2))) < 1.2e-2_dp)
 deallocate(x, y, x2)
 
 ! Test iix correctness:
@@ -110,13 +110,5 @@ call cpu_time(t1)
 y2 = spline3(x, y, x2)
 call cpu_time(t2)
 print *, "Spline time:", t2-t1
-
-contains
-
-function interp(x, y, x2) result(y2)
-real(dp), intent(in) :: x(:), y(:), x2(:)
-real(dp) :: y2(size(x2))
-y2 = spline3(x, y, x2)
-end function
 
 end program
