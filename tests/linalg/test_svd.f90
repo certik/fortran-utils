@@ -1,4 +1,4 @@
-program test_svdvals
+program test_svd
 use types, only: dp
 use utils, only: assert
 use linalg, only: svd, eye, diag

@@ -764,22 +764,22 @@ contains
     real(dp), allocatable :: s(:)
     ! LAPACK related:
     integer :: info, lwork, m, n
-    real(dp), allocatable :: work(:)
+    real(dp), allocatable :: work(:), At(:,:)
     real(dp) :: u(1,1), vt(1,1)  ! not used if only s is to be computed
 
     m = size(A(:,1))  ! = lda
     n = size(A(1,:))
-
-    allocate(s(min(m,n)))
+    allocate(At(m,n), s(min(m,n)))
+    At(:,:) = A(:, :)  ! A is overwritten in dgesvd
 
     ! query optimal lwork and allocate workspace:
     allocate(work(1))
-    call dgesvd('N', 'N', m, n, A, m, s, u, 1, vt, 1, work, -1, info)
+    call dgesvd('N', 'N', m, n, At, m, s, u, 1, vt, 1, work, -1, info)
     lwork = int(real(work(1)))
     deallocate(work)
     allocate(work(lwork))
 
-    call dgesvd('N', 'N', m, n, A, m, s, u, 1, vt, 1, work, lwork, info)
+    call dgesvd('N', 'N', m, n, At, m, s, u, 1, vt, 1, work, lwork, info)
     if(info /= 0) then
        print *, "dgesvd returned info = ", info
        if(info < 0) then
@@ -800,23 +800,24 @@ contains
     real(dp), allocatable :: s(:)
     ! LAPACK related:
     integer :: info, lwork, m, n, lrwork
-    complex(dp), allocatable :: work(:)
+    complex(dp), allocatable :: work(:), At(:,:)
     real(dp), allocatable :: rwork(:)
     complex(dp) :: u(1,1), vt(1,1)  ! not used if only s is to be computed
 
     m = size(A(:,1))  ! = lda
     n = size(A(1,:))
     lrwork = 5*min(m,n)
-    allocate(s(min(m,n)), rwork(lrwork))
+    allocate(At(m,n), s(min(m,n)), rwork(lrwork))
+    At(:,:) = A(:,:)  ! A is overwritten in zgesvd!
 
     ! query optimal lwork and allocate workspace:
     allocate(work(1))
-    call zgesvd('N', 'N', m, n, A, m, s, u, 1, vt, 1, work, -1, rwork, info)
+    call zgesvd('N', 'N', m, n, At, m, s, u, 1, vt, 1, work, -1, rwork, info)
     lwork = int(real(work(1)))
     deallocate(work)
     allocate(work(lwork))
 
-    call zgesvd('N', 'N', m, n, A, m, s, u, 1, vt, 1, work, lwork, rwork, info)
+    call zgesvd('N', 'N', m, n, At, m, s, u, 1, vt, 1, work, lwork, rwork, info)
     if(info /= 0) then
        print *, "zgesvd returned info = ", info
        if(info < 0) then
