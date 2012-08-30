@@ -78,6 +78,12 @@ module linalg
      module procedure zsvd
   end interface svd
 
+  ! assert shape of matrices:
+  interface assert_shape
+     module procedure dassert_shape
+     module procedure zassert_shape
+  end interface assert_shape
+
 contains
 
   ! TODO: add optional switch for left or right eigenvectors in deig() and zeig()?
@@ -91,6 +97,8 @@ contains
 
     lda = size(A(:,1))
     n = size(A(1,:))
+    call assert_shape(A, [n, n], "solve", "A")
+    call assert_shape(c, [n, n], "solve", "c")
     ldvl = n
     ldvr = n
     lwork = 8*n  ! TODO: can this size be optimized? query first?
@@ -138,6 +146,8 @@ contains
 
     lda = size(A(:,1))
     n = size(A(1,:))
+    call assert_shape(A, [n, n], "solve", "A")
+    call assert_shape(c, [n, n], "solve", "c")
     ldvl = n
     ldvr = n
     lwork = 8*n  ! TODO: can this size be optimized? query first?
@@ -170,6 +180,7 @@ contains
 
     lda = size(A(:,1))
     n = size(A(1,:))
+    call assert_shape(A, [n, n], "solve", "A")
     ldvl = n
     ldvr = n
     lwork = 8*n  ! TODO: can this size be optimized? query first?
@@ -204,6 +215,7 @@ contains
 
     lda = size(A(:,1))
     n = size(A(1,:))
+    call assert_shape(A, [n, n], "solve", "A")
     ldvl = n
     ldvr = n
     lwork = 8*n  ! TODO: can this size be optimized? query first?
@@ -242,6 +254,9 @@ contains
 
     ! solve
     n = size(Am,1)
+    call assert_shape(Am, [n, n], "eigh", "Am")
+    call assert_shape(Bm, [n, n], "eigh", "B")
+    call assert_shape(c, [n, n], "eigh", "c")
     lwork = 1 + 6*n + 2*n**2
     liwork = 3 + 5*n
     allocate(Bmt(n,n), work(lwork), iwork(liwork))
@@ -279,6 +294,8 @@ contains
 
     ! solve
     n = size(Am,1)
+    call assert_shape(Am, [n, n], "eigh", "Am")
+    call assert_shape(c, [n, n], "eigh", "c")
     lwork = 1 + 6*n + 2*n**2
     liwork = 3 + 5*n
     allocate(work(lwork), iwork(liwork))
@@ -313,6 +330,9 @@ contains
 
     ! solve
     n = size(Am,1)
+    call assert_shape(Am, [n, n], "eigh", "Am")
+    call assert_shape(Bm, [n, n], "eigh", "Bm")
+    call assert_shape(c, [n, n], "eigh", "c")
     lwork = 2*n + n**2
     lrwork = 1 + 5*N + 2*n**2
     liwork = 3 + 5*n
@@ -351,6 +371,8 @@ contains
 
     ! use LAPACK's zheevd routine
     n = size(Am, 1)
+    call assert_shape(Am, [n, n], "eigh", "Am")
+    call assert_shape(c, [n, n], "eigh", "c")
     lda = max(1, n)
     lwork = 2*n + n**2
     lrwork = 1 + 5*n + 2*n**2
@@ -383,6 +405,7 @@ contains
 
     ! use LAPACK's dgetrf and dgetri
     n = size(Am(1, :))
+    call assert_shape(Am, [n, n], "inv", "Am")
     lda = n
     nb = ilaenv(1, 'DGETRI', "UN", n, -1, -1, -1)  ! TODO: check UN param
     lwork = n*nb
@@ -429,6 +452,7 @@ contains
     integer, allocatable:: ipiv(:)
 
     n = size(Am, 1)
+    call assert_shape(Am, [n, n], "inv", "Am")
     nb = ilaenv(1, 'ZGETRI', "UN", n, -1, -1, -1)  ! TODO: check UN param
     if (nb < 1) nb = max(1, n)
     lwork = n*nb
@@ -472,7 +496,8 @@ contains
     integer, allocatable :: ipiv(:)
 
     n = size(A(1,:))
-    lda = size(A(:, 1))
+    lda = size(A(:, 1))  ! TODO: remove lda (which is = n!)
+    call assert_shape(A, [n, n], "solve", "A")
     allocate(At(lda,n), bt(n,1), ipiv(n), x(n))
     At = A
     bt(:,1) = b(:)
@@ -502,7 +527,8 @@ contains
     integer, allocatable :: ipiv(:)
 
     n = size(A(1,:))
-    lda = size(A(:, 1))
+    lda = size(A(:, 1))  ! TODO: remove lda here, too
+    call assert_shape(A, [n, n], "solve", "A")
     allocate(At(lda,n), bt(n,1), ipiv(n), x(n))
     At = A
     bt(:,1) = b(:)
@@ -544,6 +570,7 @@ contains
     real(dp), allocatable :: At(:,:)
 
     n = size(A(1,:))
+    call assert_shape(A, [n, n], "det", "A")
     allocate(At(n,n), ipiv(n))
     At = A
     call dgetrf(n, n, At, n, ipiv, info)
@@ -585,6 +612,7 @@ contains
     complex(dp), allocatable :: At(:,:)
 
     n = size(A(1,:))
+    call assert_shape(A, [n, n], "det", "A")
     allocate(At(n,n), ipiv(n))
     At = A
     call zgetrf(n, n, At, n, ipiv, info)
@@ -823,6 +851,9 @@ contains
     allocate(At(m,n))
     At(:,:) = A(:,:)  ! use a temporary as dgesvd destroys its input
 
+    call assert_shape(U, [m, m], "svd", "U")
+    call assert_shape(Vtransp, [n, n], "svd", "Vtransp")
+
     ! query optimal lwork and allocate workspace:
     allocate(work(1))
     call dgesvd('A', 'A', m, n, At, m, s, U, ldu, Vtransp, n, work, -1, info)
@@ -869,6 +900,9 @@ contains
     allocate(rwork(lrwork), At(m,n))
     At(:,:) = A(:,:)  ! use a temporary as zgesvd destroys its input
 
+    call assert_shape(U, [m, m], "svd", "U")
+    call assert_shape(Vtransp, [n, n], "svd", "Vtransp")
+
     ! query optimal lwork and allocate workspace:
     allocate(work(1))
     call zgesvd('A', 'A', m, n, At, m, s, U, ldu, Vtransp, n, work, -1,&
@@ -892,5 +926,31 @@ contains
        call stop_error('svd: zgesvd error')
     endif
   end subroutine zsvd
+
+  subroutine dassert_shape(A, shap, routine, matname)
+    ! make sure a given real matrix has a given shape
+    real(dp), intent(in) :: A(:,:)
+    integer, intent(in) :: shap(:)
+    character(len=*) :: routine, matname
+
+    if(any(shape(A) /= shap)) then
+       print *, "In routine " // routine // " matrix " // matname // " has illegal shape ", shape(A)
+       print *, "Shape should be ", shap
+       stop 1
+    end if
+  end subroutine dassert_shape
+
+  subroutine zassert_shape(A, shap, routine, matname)
+    ! make sure a given real matrix has a given shape
+    complex(dp), intent(in) :: A(:,:)
+    integer, intent(in) :: shap(:)
+    character(len=*) :: routine, matname
+
+    if(any(shape(A) /= shap)) then
+       print *, "In routine " // routine // " matrix " // matname // " has illegal shape ", shape(A)
+       print *, "Shape should be ", shap
+       stop 1
+    end if
+  end subroutine zassert_shape
 
 end module linalg
