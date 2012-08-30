@@ -937,7 +937,7 @@ contains
     if(any(shape(A) /= shap)) then
        print *, "In routine " // routine // " matrix " // matname // " has illegal shape ", shape(A)
        print *, "Shape should be ", shap
-       stop 1
+       call stop_error("Aborting due to illegal matrix operation")
     end if
   end subroutine dassert_shape
 
@@ -950,7 +950,7 @@ contains
     if(any(shape(A) /= shap)) then
        print *, "In routine " // routine // " matrix " // matname // " has illegal shape ", shape(A)
        print *, "Shape should be ", shap
-       stop 1
+       call stop_error("Aborting due to illegal matrix operation")
     end if
   end subroutine zassert_shape
 
