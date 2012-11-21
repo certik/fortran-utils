@@ -5,6 +5,7 @@ set(SRC
     ppm.f90
     optimize.f90
     special.f90
+    amos.f90
 )
 
 if(WITH_LAPACK)
@@ -17,5 +18,9 @@ if(WITH_HDF5)
     # This directory contains the hdf5.mod that we need:
     include_directories($ENV{SPKG_LOCAL}/include)
 endif()
+
+
+add_definitions(-Wno-implicit-interface)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/legacy/amos)
 
 add_library(fortran_utils ${SRC})
