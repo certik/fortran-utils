@@ -1,16 +1,309 @@
 module special
 
-! Special functions
+! Special functions:
+! This module offers some special function functionality such as
+!- spherical Bessel functions
+!- zeros of real Bessel functions
+!- Bessel and Hankel functions of complex argument (wrapping the amos library)
+!- Airy functions Ai and Bi
+
+! Note on the amos wrappers: the amos routines generally offer the possibility
+! of exponential scaling to remove exponential asymptotic behaviour.
+! We do not expose the corresponding switches to the user, however, it is
+! straight forward to add those.
 
 use types, only: dp
-use constants, only: pi
+use constants, only: pi, i_
 use utils, only: stop_error
 use optimize, only: bisect
+use amos
 implicit none
 private
-public bessel_jn_zeros, spherical_bessel_jn, spherical_bessel_jn_zeros
+public bessel_jn_zeros, spherical_bessel_jn, spherical_bessel_jn_zeros, &
+       besselj, bessely, hankel1, hankel2, besseli, besselk, &  ! note the missing underscores in Bessel functions
+       airyai, dairyai, airybi, dairybi  ! Airy functions Ai and Bi and their derivatives
+
+! Bessel J function (first kind)
+interface besselj
+    module procedure besseljn_real
+    module procedure besseljv_real
+    module procedure besseljv_complex
+end interface besselj
+
+! Bessel Y function (second kind)
+interface bessely
+    module procedure besselyn_real
+    module procedure besselyv_real
+    module procedure besselyv_complex
+end interface bessely
+
+! Hankel H function of first kind
+interface hankel1
+    module procedure hankel1n_real
+    module procedure hankel1v_real
+    module procedure hankel1v_complex
+end interface hankel1
+
+! Hankel H function of second kind
+interface hankel2
+    module procedure hankel2n_real
+    module procedure hankel2v_real
+    module procedure hankel2v_complex
+end interface hankel2
+
+! modified Bessel function of first kind
+interface besseli
+    module procedure besseliv_real
+    module procedure besseliv_complex
+end interface besseli
+
+! modified Bessel function of second kind
+interface besselk
+    module procedure besselkv_real
+    module procedure besselkv_complex
+end interface besselk
 
 contains
+
+! TODO: what to do with negative orders? this is not supported by any of the routines here!
+
+function besseljn_real(order, x) result(res)
+    implicit none
+    integer, intent(in) :: order
+    real(dp), intent(in) :: x
+    real(dp) :: res
+
+    ! convenience function that calls Bessel functions of integer order
+    ! (intrinsic to F2008)
+
+    if(order == 0) then
+        res = bessel_j0(x)
+    elseif(order == 1) then
+        res = bessel_j1(x)
+    else
+        res = bessel_jn(order, x)
+    endif
+end function besseljn_real
+
+
+function besseljv_real(order, x) result(res)
+    implicit none
+    real(dp), intent(in) :: order, x
+    real(dp) :: res
+    complex(dp) :: resCmplx
+
+    ! here, we do rely in an informed user: if the user wanted Bessel functions
+    ! of integer order n, he/she should call bessel_jn() (as of F2008) directly.
+    ! Hence, here we just convert the argument to a complex number and call the
+    ! amos routine
+    ! TODO: on the long run, wrap the cephes routines!
+
+    resCmplx = besseljv_complex(order, cmplx(x, 0.0_dp, kind=dp))
+    res = real(resCmplx)
+end function besseljv_real
+
+
+function besseljv_complex(order, z) result(res)
+    implicit none
+    real(dp), intent(in) :: order
+    complex(dp), intent(in) :: z
+    complex(dp) :: res
+
+    integer, parameter :: scaling=1, length=1
+    real(dp) :: resReal(length), resImag(length)
+    integer :: underflows, ierr
+
+    ! Note a certain asymmetry between the complex and the real argument routine:
+    ! The complex argument one allows rescaling, the real argument one doesn't.
+    ! However, the real argument one will not blow up as |x| -> oo, so there is
+    ! no problem.
+
+    ! TODO: note on asymptotic behaviour...
+
+    call zbesj(real(z), aimag(z), order, scaling, length, resReal, resImag, underflows, ierr)
+    res = cmplx(resReal(1), resImag(1), kind=dp)
+end function besseljv_complex
+
+
+function besselyn_real(order, x) result(res)
+    implicit none
+    integer, intent(in) :: order
+    real(dp), intent(in) :: x
+    real(dp) :: res
+
+    ! convenience function that calls Bessel functions of integer order
+    ! (intrinsic to F2008)
+
+    if(order == 0) then
+        res = bessel_y0(x)
+    elseif(order == 1) then
+        res = bessel_y1(x)
+    else
+        res = bessel_yn(order, x)
+    endif
+end function besselyn_real
+
+
+function besselyv_real(order, x) result(res)
+    implicit none
+    real(dp), intent(in) :: order, x
+    real(dp) :: res
+    complex(dp) :: resCmplx
+
+    resCmplx = besselyv_complex(order, x+0*i_)
+    res = real(resCmplx)
+end function besselyv_real
+
+
+function besselyv_complex(order, z) result(res)
+    implicit none
+    real(dp), intent(in) :: order
+    complex(dp), intent(in) :: z
+    complex(dp) :: res
+
+    integer, parameter :: scaling=1, length=1
+    real(dp) :: workr(length), worki(length)
+    real(dp) :: resReal(length), resImag(length)
+    integer :: underflows, ierr
+
+    call zbesy(real(z), aimag(z), order, scaling, length, resReal, resImag, underflows, workr, worki, ierr)
+    res = resReal(1) + i_*resImag(1)
+end function besselyv_complex
+
+
+function hankel1n_real(order, x) result(res)
+    implicit none
+    integer, intent(in) :: order
+    real(dp), intent(in) :: x
+    complex(dp) :: res
+
+    if(order == 0) then
+        res = bessel_j0(x) + i_*bessel_y0(x)
+    elseif(order == 1) then
+        res = bessel_j1(x) + i_*bessel_y1(x)
+    else
+        res = bessel_jn(order, x) + i_*bessel_yn(order, x)
+    endif
+end function hankel1n_real
+
+
+function hankel1v_real(order, x) result(res)
+    implicit none
+    real(dp), intent(in) :: order, x
+    complex(dp) :: res
+
+    res = hankel1v_complex(order, cmplx(x, 0.0_dp, kind=dp))
+end function hankel1v_real
+
+
+function hankel1v_complex(order, z) result(res)
+    implicit none
+    real(dp), intent(in) :: order
+    complex(dp), intent(in) :: z
+    complex(dp) :: res
+
+    integer, parameter :: scaling=1, length=1, hankelkind=1
+    real(dp) :: resReal(length), resImag(length)
+    integer :: underflows, ierr
+
+    call zbesh(real(z), aimag(z), order, scaling, hankelkind, length, resReal, resImag, underflows, ierr)
+    res = cmplx(resReal(1), resImag(1), kind=dp)
+end function hankel1v_complex
+
+
+function hankel2n_real(order, x) result(res)
+    implicit none
+    integer, intent(in) :: order
+    real(dp), intent(in) :: x
+    complex(dp) :: res
+
+    ! convenience function that calls Bessel functions of integer order
+    ! (intrinsic to F2008)
+
+    if(order == 0) then
+        res = bessel_j0(x) - i_*bessel_y0(x)
+    elseif(order == 1) then
+        res = bessel_j1(x) - i_*bessel_y1(x)
+    else
+        res = bessel_jn(order, x) - i_*bessel_yn(order, x)
+    endif
+end function hankel2n_real
+
+
+function hankel2v_real(order, x) result(res)
+    implicit none
+    real(dp), intent(in) :: order, x
+    complex(dp) :: res
+
+    res = hankel2v_complex(order, cmplx(x, 0.0_dp, kind=dp))
+end function hankel2v_real
+
+
+function hankel2v_complex(order, z) result(res)
+    implicit none
+    real(dp), intent(in) :: order
+    complex(dp), intent(in) :: z
+    complex(dp) :: res
+
+    integer, parameter :: scaling=1, length=1, hankelkind=2
+    real(dp) :: resReal(length), resImag(length)
+    integer :: underflows, ierr
+
+    call zbesh(real(z), aimag(z), order, scaling, hankelkind, length, resReal, resImag, underflows, ierr)
+    res = cmplx(resReal(1), resImag(1), kind=dp)
+end function hankel2v_complex
+
+
+function besseliv_real(order, x) result(res)
+    implicit none
+    real(dp), intent(in) :: order, x
+    real(dp) :: res
+    complex(dp) :: resCmplx
+
+    resCmplx = besseliv_complex(order, x+0*i_)
+    res = real(resCmplx)
+end function besseliv_real
+
+
+function besseliv_complex(order, z) result(res)
+    implicit none
+    real(dp), intent(in) :: order
+    complex(dp), intent(in) :: z
+    complex(dp) :: res
+
+    integer, parameter :: scaling=1, length=1
+    real(dp) :: resReal(length), resImag(length)
+    integer :: underflows, ierr
+
+    call zbesi(real(z), aimag(z), order, scaling, length, resReal, resImag, underflows, ierr)
+    res = resReal(1) + i_*resImag(1)
+end function besseliv_complex
+
+function besselkv_real(order, x) result(res)
+    implicit none
+    real(dp), intent(in) :: order, x
+    real(dp) :: res
+    complex(dp) :: resCmplx
+
+    resCmplx = besselkv_complex(order, x+0*i_)
+    res = real(resCmplx)
+end function besselkv_real
+
+
+function besselkv_complex(order, z) result(res)
+    implicit none
+    real(dp), intent(in) :: order
+    complex(dp), intent(in) :: z
+    complex(dp) :: res
+
+    integer, parameter :: scaling=1, length=1
+    real(dp) :: resReal(length), resImag(length)
+    integer :: underflows, ierr
+
+    call zbesk(real(z), aimag(z), order, scaling, length, resReal, resImag, underflows, ierr)
+    res = resReal(1) + i_*resImag(1)
+end function besselkv_complex
+
 
 function bessel_j0_zeros(nzeros, eps) result(zeros)
 ! Calculates zeros of bessel_j0().
@@ -76,6 +369,7 @@ end function
 
 end function
 
+
 real(dp) function spherical_bessel_jn(n, x) result(r)
 integer, intent(in) :: n
 real(dp), intent(in) :: x
@@ -85,6 +379,7 @@ call sphj(n, x, nm, sj, dj)
 if (nm /= n) call stop_error("spherical_bessel_jn: sphj didn't converge")
 r = sj(n)
 end function
+
 
 function spherical_bessel_jn_zeros(nmax, nzeros, eps) result(zeros)
 ! Calculates 'nzeros' zeros of spherical_bessel_jn() for all n=0, 1, ..., nmax
@@ -108,17 +403,17 @@ end do
 
 contains
 
-real(dp) function f(x)
-real(dp), intent(in) :: x
-f = spherical_bessel_jn(n, x)
-end function
+    real(dp) function f(x)
+        real(dp), intent(in) :: x
+        f = spherical_bessel_jn(n, x)
+    end function f
 
 end function
+
 
 ! The SPHJ, SPHY, MSTA1, MSTA2 routines below are taken from SciPy's specfun.f.
 ! Authors: Shanjie Zhang and Jianming Jin
 ! Copyrighted but permission granted to use code in programs.
-
         SUBROUTINE SPHJ(N,X,NM,SJ,DJ)
 !       =======================================================
 !       Purpose: Compute spherical Bessel functions jn(x) and
@@ -294,5 +589,65 @@ end function
         real(dp), intent(in) :: x
         r = log10(6.28_dp*n)/2 - n*log10(1.36_dp*x/n)
         end function
+
+
+! Ai(z)
+function airyai(z) result(res)
+    implicit none
+    complex(dp), intent(in) :: z
+    complex(dp) :: res
+
+    integer :: underflow, ierr
+    real(dp) :: resReal, resImag
+    integer, parameter :: deriv=0, scaling=1  ! compute unscaled Ai(z)
+
+    call zairy(real(z), aimag(z), deriv, scaling, resReal, resImag, underflow, ierr)
+    res = resReal + i_*resImag
+end function airyai
+
+
+! d(Ai(z))/dz
+function dairyai(z) result(res)
+    implicit none
+    complex(dp), intent(in) :: z
+    complex(dp) :: res
+
+    integer :: underflow, ierr
+    real(dp) :: resReal, resImag
+    integer, parameter :: deriv=1, scaling=1  ! compute unscaled d(Ai(z))/dz
+
+    call zairy(real(z), aimag(z), deriv, scaling, resReal, resImag, underflow, ierr)
+    res = resReal + i_*resImag
+end function dairyai
+
+
+! Bi(z)
+function airybi(z) result(res)
+    implicit none
+    complex(dp), intent(in) :: z
+    complex(dp) :: res
+
+    integer :: underflow, ierr
+    real(dp) :: resReal, resImag
+    integer, parameter :: deriv=0, scaling=1  ! compute unscaled Bi(z)
+
+    call zbiry(real(z), aimag(z), deriv, scaling, resReal, resImag, underflow, ierr)
+    res = resReal + i_*resImag
+end function airybi
+
+
+! d(Bi(z))/dz
+function dairybi(z) result(res)
+    implicit none
+    complex(dp), intent(in) :: z
+    complex(dp) :: res
+
+    integer :: underflow, ierr
+    real(dp) :: resReal, resImag
+    integer, parameter :: deriv=1, scaling=1  ! compute unscaled d(Bi(z))/dz
+
+    call zbiry(real(z), aimag(z), deriv, scaling, resReal, resImag, underflow, ierr)
+    res = resReal + i_*resImag
+end function dairybi
 
 end module
