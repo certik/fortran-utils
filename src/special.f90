@@ -1,7 +1,7 @@
 module special
 
 ! Special functions:
-! This module offers some special function functionality such as
+! This module offers some special functions such as
 !- spherical Bessel functions
 !- zeros of real Bessel functions
 !- Bessel and Hankel functions of complex argument (wrapping the amos library)
@@ -65,8 +65,6 @@ end interface besselk
 
 contains
 
-! TODO: what to do with negative orders? this is not supported by any of the routines here!
-
 function besseljn_real(order, x) result(res)
     implicit none
     integer, intent(in) :: order
@@ -118,9 +116,24 @@ function besseljv_complex(order, z) result(res)
     ! However, the real argument one will not blow up as |x| -> oo, so there is
     ! no problem.
 
-    ! TODO: note on asymptotic behaviour...
-
     call zbesj(real(z), aimag(z), order, scaling, length, resReal, resImag, underflows, ierr)
+    if(ierr > 0) then
+        if(ierr == 1) then
+            print *, "IERR=1, INPUT ERROR - NO COMPUTATION"
+        elseif(ierr == 2) then
+            print *, "IERR=2, OVERFLOW - NO COMPUTATION, AIMAG(Z) TOO LARGE ON KODE=1"
+        elseif(ierr == 3) then
+            print *, "IERR=3, CABS(Z) OR FNU+N-1 LARGE - COMPUTATION DONE"
+            print *, "BUT LOSSES OF SIGNIFCANCE BY ARGUMENT"
+            print *, "REDUCTION PRODUCE LESS THAN HALF OF MACHINE ACCURACY"
+        elseif(ierr == 4) then
+            print *, "IERR=4, CABS(Z) OR FNU+N-1 TOO LARGE - NO COMPUTATION BECAUSE"
+            print *, "OF COMPLETE LOSSES OF SIGNIFICANCE BY ARGUMENT REDUCTION"
+        elseif(ierr == 5) then
+            print *, "IERR=5, ERROR - NO COMPUTATION ALGORITHM TERMINATION CONDITION NOT MET"
+        endif
+        call stop_error("besselj: zbesj error")
+    endif
     res = cmplx(resReal(1), resImag(1), kind=dp)
 end function besseljv_complex
 
@@ -167,6 +180,23 @@ function besselyv_complex(order, z) result(res)
     integer :: underflows, ierr
 
     call zbesy(real(z), aimag(z), order, scaling, length, resReal, resImag, underflows, workr, worki, ierr)
+    if(ierr > 0) then
+        if(ierr == 1) then
+            print *, "IERR=1, INPUT ERROR - NO COMPUTATION"
+        elseif(ierr == 2) then
+            print *, "IERR=2, OVERFLOW - NO COMPUTATION, FNU IS TOO LARGE OR CABS(Z)"
+            print *, "IS TOO SMALL OR BOTH"
+        elseif(ierr == 3) then
+            print *, "IERR=3, CABS(Z) OR FNU+N-1 LARGE - COMPUTATION DONE BUT LOSSES OF SIGNIFCANCE"
+            print *, "BY ARGUMENT REDUCTION PRODUCE LESS THAN HALF OF MACHINE ACCURACY"
+        elseif(ierr == 4) then
+            print *, "IERR=4, CABS(Z) OR FNU+N-1 TOO LARGE - NO COMPUTATION BECAUSE OF COMPLETE"
+            print *, "LOSSES OF SIGNIFICANCE BY ARGUMENT REDUCTION"
+        elseif(ierr == 5) then
+            print *, "IERR=5, ERROR - NO COMPUTATION ALGORITHM TERMINATION CONDITION NOT MET"
+        endif
+        call stop_error("bessely: zbesy error")
+    endif
     res = resReal(1) + i_*resImag(1)
 end function besselyv_complex
 
@@ -207,6 +237,22 @@ function hankel1v_complex(order, z) result(res)
     integer :: underflows, ierr
 
     call zbesh(real(z), aimag(z), order, scaling, hankelkind, length, resReal, resImag, underflows, ierr)
+    if(ierr > 0) then
+        if(ierr == 1) then
+            print *, "IERR=1, INPUT ERROR - NO COMPUTATION"
+        elseif(ierr == 2) then
+            print *, "IERR=2, OVERFLOW - NO COMPUTATION, FNU TOO LARGE OR CABS(Z) TOO SMALL OR BOTH"
+        elseif(ierr == 3) then
+            print *, "IERR=3, CABS(Z) OR FNU+N-1 LARGE - COMPUTATION DONE BUT LOSSES OF SIGNIFCANCE"
+            print *, "BY ARGUMENT REDUCTION PRODUCE LESS THAN HALF OF MACHINE ACCURACY"
+        elseif(ierr == 4) then
+            print *, "IERR=4, CABS(Z) OR FNU+N-1 TOO LARGE - NO COMPUTATION BECAUSE OF COMPLETE"
+            print *, "LOSSES OF SIGNIFICANCE BY ARGUMENT REDUCTION"
+        elseif(ierr == 5) then
+            print *, "IERR=5, ERROR - NO COMPUTATION ALGORITHM TERMINATION CONDITION NOT MET"
+        endif
+        call stop_error("hankel1: zbesh error")
+    endif
     res = cmplx(resReal(1), resImag(1), kind=dp)
 end function hankel1v_complex
 
@@ -250,6 +296,22 @@ function hankel2v_complex(order, z) result(res)
     integer :: underflows, ierr
 
     call zbesh(real(z), aimag(z), order, scaling, hankelkind, length, resReal, resImag, underflows, ierr)
+    if(ierr > 0) then
+        if(ierr == 1) then
+            print *, "IERR=1, INPUT ERROR - NO COMPUTATION"
+        elseif(ierr == 2) then
+            print *, "IERR=2, OVERFLOW - NO COMPUTATION, FNU TOO LARGE OR CABS(Z) TOO SMALL OR BOTH"
+        elseif(ierr == 3) then
+            print *, "IERR=3, CABS(Z) OR FNU+N-1 LARGE - COMPUTATION DONE BUT LOSSES OF SIGNIFCANCE"
+            print *, "BY ARGUMENT REDUCTION PRODUCE LESS THAN HALF OF MACHINE ACCURACY"
+        elseif(ierr == 4) then
+            print *, "IERR=4, CABS(Z) OR FNU+N-1 TOO LARGE - NO COMPUTATION BECAUSE OF COMPLETE"
+            print *, "LOSSES OF SIGNIFICANCE BY ARGUMENT REDUCTION"
+        elseif(ierr == 5) then
+            print *, "IERR=5, ERROR - NO COMPUTATION ALGORITHM TERMINATION CONDITION NOT MET"
+        endif
+        call stop_error("hankel2: zbesh error")
+    endif
     res = cmplx(resReal(1), resImag(1), kind=dp)
 end function hankel2v_complex
 
@@ -276,6 +338,22 @@ function besseliv_complex(order, z) result(res)
     integer :: underflows, ierr
 
     call zbesi(real(z), aimag(z), order, scaling, length, resReal, resImag, underflows, ierr)
+    if(ierr > 0) then
+        if(ierr == 1) then
+            print *, "IERR=1, INPUT ERROR - NO COMPUTATION"
+        elseif(ierr == 2) then
+            print *, "IERR=2, OVERFLOW - NO COMPUTATION, REAL(Z) TOO LARGE ON KODE=1"
+        elseif(ierr == 3) then
+            print *, "IERR=3, CABS(Z) OR FNU+N-1 LARGE - COMPUTATION DONE BUT LOSSES OF SIGNIFCANCE"
+            print *, "BY ARGUMENT REDUCTION PRODUCE LESS THAN HALF OF MACHINE ACCURACY"
+        elseif(ierr == 4) then
+            print *, "IERR=4, CABS(Z) OR FNU+N-1 TOO LARGE - NO COMPUTATION BECAUSE OF COMPLETE"
+            print *, "LOSSES OF SIGNIFICANCE BY ARGUMENT REDUCTION"
+        elseif(ierr == 5) then
+            print *, "IERR=5, ERROR - NO COMPUTATION ALGORITHM TERMINATION CONDITION NOT MET"
+        endif
+        call stop_error("besseli: zbesi error")
+    endif
     res = resReal(1) + i_*resImag(1)
 end function besseliv_complex
 
@@ -301,6 +379,23 @@ function besselkv_complex(order, z) result(res)
     integer :: underflows, ierr
 
     call zbesk(real(z), aimag(z), order, scaling, length, resReal, resImag, underflows, ierr)
+    if(ierr > 0) then
+        if(ierr == 1) then
+            print *, "IERR=1, INPUT ERROR - NO COMPUTATION"
+        elseif(ierr == 2) then
+            print *, "IERR=2, OVERFLOW - NO COMPUTATION, FNU IS TOO LARGE OR CABS(Z) IS TOO SMALL"
+            print *, "OR BOTH"
+        elseif(ierr == 3) then
+            print *, "IERR=3, CABS(Z) OR FNU+N-1 LARGE - COMPUTATION DONE BUT LOSSES OF SIGNIFCANCE"
+            print *, "BY ARGUMENT REDUCTION PRODUCE LESS THAN HALF OF MACHINE ACCURACY"
+        elseif(ierr == 4) then
+            print *, "IERR=4, CABS(Z) OR FNU+N-1 TOO LARGE - NO COMPUTATION BECAUSE OF COMPLETE"
+            print *, "LOSSES OF SIGNIFICANCE BY ARGUMENT REDUCTION"
+        elseif(ierr == 5) then
+            print *, "IERR=5, ERROR - NO COMPUTATION ALGORITHM TERMINATION CONDITION NOT MET"
+        endif
+        call stop_error("besselk: zbesk error")
+    endif
     res = resReal(1) + i_*resImag(1)
 end function besselkv_complex
 
@@ -602,6 +697,22 @@ function airyai(z) result(res)
     integer, parameter :: deriv=0, scaling=1  ! compute unscaled Ai(z)
 
     call zairy(real(z), aimag(z), deriv, scaling, resReal, resImag, underflow, ierr)
+    if(ierr > 0) then
+        if(ierr == 1) then
+            print *, "IERR=1, INPUT ERROR - NO COMPUTATION"
+        elseif(ierr == 2) then
+            print *, "IERR=2, OVERFLOW - NO COMPUTATION, REAL(ZTA) TOO LARGE ON KODE=1"
+        elseif(ierr == 3) then
+            print *, "IERR=3, CABS(Z) LARGE - COMPUTATION DONE BUT LOSSES OF SIGNIFCANCE"
+            print *, "BY ARGUMENT REDUCTION PRODUCE LESS THAN HALF OF MACHINE ACCURACY"
+        elseif(ierr == 4) then
+            print *, "IERR=4, CABS(Z) TOO LARGE - NO COMPUTATION BECAUSE OF COMPLETE"
+            print *, "LOSSES OF SIGNIFICANCE BY ARGUMENT REDUCTION"
+        elseif(ierr == 5) then
+            print *, "IERR=5, ERROR - NO COMPUTATION ALGORITHM TERMINATION CONDITION NOT MET"
+        endif
+        call stop_error("airyai: zairy error")
+    endif
     res = resReal + i_*resImag
 end function airyai
 
@@ -617,6 +728,22 @@ function dairyai(z) result(res)
     integer, parameter :: deriv=1, scaling=1  ! compute unscaled d(Ai(z))/dz
 
     call zairy(real(z), aimag(z), deriv, scaling, resReal, resImag, underflow, ierr)
+    if(ierr > 0) then
+        if(ierr == 1) then
+            print *, "IERR=1, INPUT ERROR - NO COMPUTATION"
+        elseif(ierr == 2) then
+            print *, "IERR=2, OVERFLOW - NO COMPUTATION, REAL(ZTA) TOO LARGE ON KODE=1"
+        elseif(ierr == 3) then
+            print *, "IERR=3, CABS(Z) LARGE - COMPUTATION DONE BUT LOSSES OF SIGNIFCANCE"
+            print *, "BY ARGUMENT REDUCTION PRODUCE LESS THAN HALF OF MACHINE ACCURACY"
+        elseif(ierr == 4) then
+            print *, "IERR=4, CABS(Z) TOO LARGE - NO COMPUTATION BECAUSE OF COMPLETE"
+            print *, "LOSSES OF SIGNIFICANCE BY ARGUMENT REDUCTION"
+        elseif(ierr == 5) then
+            print *, "IERR=5, ERROR - NO COMPUTATION ALGORITHM TERMINATION CONDITION NOT MET"
+        endif
+        call stop_error("dairyai: zairy error")
+    endif
     res = resReal + i_*resImag
 end function dairyai
 
@@ -632,6 +759,22 @@ function airybi(z) result(res)
     integer, parameter :: deriv=0, scaling=1  ! compute unscaled Bi(z)
 
     call zbiry(real(z), aimag(z), deriv, scaling, resReal, resImag, underflow, ierr)
+    if(ierr > 0) then
+        if(ierr == 1) then
+            print *, "IERR=1, INPUT ERROR - NO COMPUTATION"
+        elseif(ierr == 2) then
+            print *, "IERR=2, OVERFLOW - NO COMPUTATION, REAL(Z) TOO LARGE ON KODE=1"
+        elseif(ierr == 3) then
+            print *, "IERR=3, CABS(Z) LARGE - COMPUTATION DONE BUT LOSSES OF SIGNIFCANCE"
+            print *, "BY ARGUMENT REDUCTION PRODUCE LESS THAN HALF OF MACHINE ACCURACY"
+        elseif(ierr == 4) then
+            print *, "IERR=4, CABS(Z) TOO LARGE - NO COMPUTATION BECAUSE OF COMPLETE"
+            print *, "LOSSES OF SIGNIFICANCE BY ARGUMENT REDUCTION"
+        elseif(ierr == 5) then
+            print *, "IERR=5, ERROR - NO COMPUTATION ALGORITHM TERMINATION CONDITION NOT MET"
+        endif
+        call stop_error("dairyai: zairy error")
+    endif
     res = resReal + i_*resImag
 end function airybi
 
@@ -647,6 +790,22 @@ function dairybi(z) result(res)
     integer, parameter :: deriv=1, scaling=1  ! compute unscaled d(Bi(z))/dz
 
     call zbiry(real(z), aimag(z), deriv, scaling, resReal, resImag, underflow, ierr)
+    if(ierr > 0) then
+        if(ierr == 1) then
+            print *, "IERR=1, INPUT ERROR - NO COMPUTATION"
+        elseif(ierr == 2) then
+            print *, "IERR=2, OVERFLOW - NO COMPUTATION, REAL(Z) TOO LARGE ON KODE=1"
+        elseif(ierr == 3) then
+            print *, "IERR=3, CABS(Z) LARGE - COMPUTATION DONE BUT LOSSES OF SIGNIFCANCE"
+            print *, "BY ARGUMENT REDUCTION PRODUCE LESS THAN HALF OF MACHINE ACCURACY"
+        elseif(ierr == 4) then
+            print *, "IERR=4, CABS(Z) TOO LARGE - NO COMPUTATION BECAUSE OF COMPLETE"
+            print *, "LOSSES OF SIGNIFICANCE BY ARGUMENT REDUCTION"
+        elseif(ierr == 5) then
+            print *, "IERR=5, ERROR - NO COMPUTATION ALGORITHM TERMINATION CONDITION NOT MET"
+        endif
+        call stop_error("dairyai: zairy error")
+    endif
     res = resReal + i_*resImag
 end function dairybi
 
