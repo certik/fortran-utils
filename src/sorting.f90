@@ -156,7 +156,7 @@ integer :: b(size(a))         ! indices into the array 'a' that sort it
 ! iargsort([10, 9, 8, 7, 6])   ! Returns [5, 4, 3, 2, 1]
 
 integer :: N                           ! number of numbers/vectors
-integer :: i,imin,relimin(1)           ! indices: i, i of smallest, relative imin
+integer :: i,imin                      ! indices: i, i of smallest
 integer :: temp                        ! temporary
 integer :: a2(size(a))
 a2 = a
@@ -166,8 +166,8 @@ do i = 1, N
 end do
 do i = 1, N-1
     ! find ith smallest in 'a'
-    relimin = minloc(a2(i:))
-    imin = relimin(1) + i - 1
+    imin = minloc(a2(i:),1) + i - 1
+
     ! swap to position i in 'a' and 'b', if not already there
     if (imin /= i) then
         temp = a2(i); a2(i) = a2(imin); a2(imin) = temp
@@ -191,8 +191,8 @@ integer :: b(size(a))         ! indices into the array 'a' that sort it
 ! rargsort([4.1_dp, 2.1_dp, 2.05_dp, -1.5_dp, 4.2_dp]) ! Returns [4, 3, 2, 1, 5]
 
 integer :: N                           ! number of numbers/vectors
-integer :: i,imin,relimin(1)           ! indices: i, i of smallest, relative imin
-integer :: temp1                        ! temporary
+integer :: i,imin                      ! indices: i, i of smallest
+integer :: temp1                       ! temporary
 real(dp) :: temp2
 real(dp) :: a2(size(a))
 a2 = a
@@ -202,8 +202,7 @@ do i = 1, N
 end do
 do i = 1, N-1
     ! find ith smallest in 'a'
-    relimin = minloc(a2(i:))
-    imin = relimin(1) + i - 1
+    imin = minloc(a2(i:),1) + i - 1
     ! swap to position i in 'a' and 'b', if not already there
     if (imin /= i) then
         temp2 = a2(i); a2(i) = a2(imin); a2(imin) = temp2
