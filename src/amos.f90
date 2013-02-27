@@ -82,12 +82,12 @@ module amos
      end subroutine zairy
 
      ! Airy function Bi (or its derivative)
-     pure subroutine zbiry(re, im, deriv, scaling, zOut_r, zOut_i, underflow, ierr)
+     pure subroutine zbiry(re, im, deriv, scaling, zOut_r, zOut_i, ierr)
        implicit none
        double precision, intent(in) :: re, im
        integer, intent(in) :: deriv, scaling
        double precision, intent(out) :: zOut_r, zOut_i
-       integer, intent(out) :: underflow, ierr
+       integer, intent(out) :: ierr
      end subroutine zbiry
 
   end interface
