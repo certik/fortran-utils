@@ -4,13 +4,17 @@ module special
 ! This module offers some special functions such as
 !- spherical Bessel functions
 !- zeros of real Bessel functions
-!- Bessel and Hankel functions of complex argument (wrapping the amos library)
+!- Bessel and Hankel functions of complex argument (wrapping the AMOS library
+!   from http://netlib.org/amos)
 !- Airy functions Ai and Bi
 
-! Note on the amos wrappers: the amos routines generally offer the possibility
+! Note on the AMOS wrappers: the AMOS routines generally offer the possibility
 ! of exponential scaling to remove exponential asymptotic behaviour.
 ! We do not expose the corresponding switches to the user, however, it is
 ! straight forward to add those.
+
+! All references labelled with "NIST" refer to the NIST Handbook of
+! Mathematical Functions (2010)
 
 use types, only: dp
 use constants, only: pi, i_
@@ -18,6 +22,7 @@ use utils, only: stop_error
 use optimize, only: bisect
 use amos
 implicit none
+
 private
 public bessel_jn_zeros, spherical_bessel_jn, spherical_bessel_jn_zeros, &
        besselj, bessely, hankel1, hankel2, besseli, besselk, &  ! note the missing underscores in Bessel functions
@@ -66,7 +71,6 @@ end interface besselk
 contains
 
 function besseljn_real(order, x) result(res)
-    implicit none
     integer, intent(in) :: order
     real(dp), intent(in) :: x
     real(dp) :: res
@@ -74,18 +78,20 @@ function besseljn_real(order, x) result(res)
     ! convenience function that calls Bessel functions of integer order
     ! (intrinsic to F2008)
 
-    if(order == 0) then
+    if(abs(order) == 0) then
         res = bessel_j0(x)
-    elseif(order == 1) then
+    elseif(abs(order) == 1) then
         res = bessel_j1(x)
     else
-        res = bessel_jn(order, x)
+        res = bessel_jn(abs(order), x)
     endif
+
+    ! apply negative order NIST eq. (10.4.1) if needed:
+    res = reflect(order)*res
 end function besseljn_real
 
 
 function besseljv_real(order, x) result(res)
-    implicit none
     real(dp), intent(in) :: order, x
     real(dp) :: res
     complex(dp) :: resCmplx
@@ -93,30 +99,27 @@ function besseljv_real(order, x) result(res)
     ! here, we do rely in an informed user: if the user wanted Bessel functions
     ! of integer order n, he/she should call bessel_jn() (as of F2008) directly.
     ! Hence, here we just convert the argument to a complex number and call the
-    ! amos routine
+    ! AMOS routine
     ! TODO: on the long run, wrap the cephes routines!
 
-    resCmplx = besseljv_complex(order, cmplx(x, 0.0_dp, kind=dp))
-    res = real(resCmplx)
+    resCmplx = besseljv_complex(order, cmplx(x, 0.0_dp, kind=dp))  ! negative order is handled in the routine called
+    res = real(resCmplx)  ! Bessel functions of real arument are real
 end function besseljv_real
 
 
 function besseljv_complex(order, z) result(res)
-    implicit none
     real(dp), intent(in) :: order
     complex(dp), intent(in) :: z
     complex(dp) :: res
 
     integer, parameter :: scaling=1, length=1
-    real(dp) :: resReal(length), resImag(length)
+    real(dp) :: resReal(length), resImag(length), callorder
     integer :: underflows, ierr
 
-    ! Note a certain asymmetry between the complex and the real argument routine:
-    ! The complex argument one allows rescaling, the real argument one doesn't.
-    ! However, the real argument one will not blow up as |x| -> oo, so there is
-    ! no problem.
+    ! make sure AMOS zbesj() is called with postive order
+    callorder = abs(order)
 
-    call zbesj(real(z), aimag(z), order, scaling, length, resReal, resImag, underflows, ierr)
+    call zbesj(real(z), aimag(z), callorder, scaling, length, resReal, resImag, underflows, ierr)
     if(ierr > 0) then
         if(ierr == 1) then
             print *, "IERR=1, INPUT ERROR - NO COMPUTATION"
@@ -134,12 +137,18 @@ function besseljv_complex(order, z) result(res)
         endif
         call stop_error("besselj: zbesj error")
     endif
-    res = cmplx(resReal(1), resImag(1), kind=dp)
+
+    ! take care of negative order if needed:
+    if(order < 0.0_dp) then  ! use NIST eq. (10.4.7):
+        res = exp(-pi*i_*callorder)*(resReal(1) + i_*resImag(1)) &
+            & + i_*sin(pi*callorder)*hankel1(callorder, z)
+    else
+        res = resReal(1) +i_*resImag(1)
+    endif
 end function besseljv_complex
 
 
 function besselyn_real(order, x) result(res)
-    implicit none
     integer, intent(in) :: order
     real(dp), intent(in) :: x
     real(dp) :: res
@@ -147,39 +156,40 @@ function besselyn_real(order, x) result(res)
     ! convenience function that calls Bessel functions of integer order
     ! (intrinsic to F2008)
 
-    if(order == 0) then
+    if(abs(order) == 0) then
         res = bessel_y0(x)
-    elseif(order == 1) then
+    elseif(abs(order) == 1) then
         res = bessel_y1(x)
     else
-        res = bessel_yn(order, x)
+        res = bessel_yn(abs(order), x)
     endif
+    res = reflect(order)*res  ! apply negative order eq. (10.4.1) from NIST
 end function besselyn_real
 
 
 function besselyv_real(order, x) result(res)
-    implicit none
     real(dp), intent(in) :: order, x
     real(dp) :: res
     complex(dp) :: resCmplx
 
-    resCmplx = besselyv_complex(order, x+0*i_)
+    resCmplx = besselyv_complex(order, x+0*i_)  ! neg. order handled in the routine called
     res = real(resCmplx)
 end function besselyv_real
 
 
 function besselyv_complex(order, z) result(res)
-    implicit none
     real(dp), intent(in) :: order
     complex(dp), intent(in) :: z
     complex(dp) :: res
 
     integer, parameter :: scaling=1, length=1
-    real(dp) :: workr(length), worki(length)
-    real(dp) :: resReal(length), resImag(length)
+    real(dp) :: workr(length), worki(length), resReal(length), resImag(length), callorder
     integer :: underflows, ierr
 
-    call zbesy(real(z), aimag(z), order, scaling, length, resReal, resImag, underflows, workr, worki, ierr)
+    ! make sure AMOS zbesy() is called with positive order:
+    callorder = abs(order)
+
+    call zbesy(real(z), aimag(z), callorder, scaling, length, resReal, resImag, underflows, workr, worki, ierr)
     if(ierr > 0) then
         if(ierr == 1) then
             print *, "IERR=1, INPUT ERROR - NO COMPUTATION"
@@ -197,28 +207,38 @@ function besselyv_complex(order, z) result(res)
         endif
         call stop_error("bessely: zbesy error")
     endif
-    res = resReal(1) + i_*resImag(1)
+
+    if(order < 0.0_dp) then  ! apply NIST eq. (10.4.7)
+        res = exp(-callorder*pi*i_)*(resReal(1) + i_*resImag(1)) + &
+            & sin(pi*callorder)*hankel1(callorder, z)
+    else
+        res = resReal(1) + i_*resImag(1)
+    endif
 end function besselyv_complex
 
 
 function hankel1n_real(order, x) result(res)
-    implicit none
     integer, intent(in) :: order
     real(dp), intent(in) :: x
     complex(dp) :: res
 
+    ! There are two linearly independent solutions to Bessel's equation.
+    ! Thus, the two Hankel functions can be written as superpositions of
+    ! J and Y, which are taken to be the two linearly independent ones.
+    ! NIST Handbook (10.4.3)
+
+    ! negative order is taken care of according to NIST eq. (10.4.2)
     if(order == 0) then
         res = bessel_j0(x) + i_*bessel_y0(x)
-    elseif(order == 1) then
-        res = bessel_j1(x) + i_*bessel_y1(x)
+    elseif(abs(order) == 1) then
+        res = reflect(order)*(bessel_j1(x) + i_*bessel_y1(x))
     else
-        res = bessel_jn(order, x) + i_*bessel_yn(order, x)
+        res = reflect(order)*(bessel_jn(order, x) + i_*bessel_yn(order, x))
     endif
 end function hankel1n_real
 
 
 function hankel1v_real(order, x) result(res)
-    implicit none
     real(dp), intent(in) :: order, x
     complex(dp) :: res
 
@@ -227,16 +247,17 @@ end function hankel1v_real
 
 
 function hankel1v_complex(order, z) result(res)
-    implicit none
     real(dp), intent(in) :: order
     complex(dp), intent(in) :: z
     complex(dp) :: res
 
     integer, parameter :: scaling=1, length=1, hankelkind=1
-    real(dp) :: resReal(length), resImag(length)
+    real(dp) :: resReal(length), resImag(length), callorder
     integer :: underflows, ierr
 
-    call zbesh(real(z), aimag(z), order, scaling, hankelkind, length, resReal, resImag, underflows, ierr)
+    callorder = abs(order)
+
+    call zbesh(real(z), aimag(z), callorder, scaling, hankelkind, length, resReal, resImag, underflows, ierr)
     if(ierr > 0) then
         if(ierr == 1) then
             print *, "IERR=1, INPUT ERROR - NO COMPUTATION"
@@ -253,12 +274,13 @@ function hankel1v_complex(order, z) result(res)
         endif
         call stop_error("hankel1: zbesh error")
     endif
-    res = cmplx(resReal(1), resImag(1), kind=dp)
+
+    ! take care of negative orders if needed:
+    res = Hrotate(1, order)*(resReal(1) + i_*resImag(1))
 end function hankel1v_complex
 
 
 function hankel2n_real(order, x) result(res)
-    implicit none
     integer, intent(in) :: order
     real(dp), intent(in) :: x
     complex(dp) :: res
@@ -266,18 +288,17 @@ function hankel2n_real(order, x) result(res)
     ! convenience function that calls Bessel functions of integer order
     ! (intrinsic to F2008)
 
-    if(order == 0) then
+    if(abs(order) == 0) then
         res = bessel_j0(x) - i_*bessel_y0(x)
-    elseif(order == 1) then
-        res = bessel_j1(x) - i_*bessel_y1(x)
+    elseif(abs(order) == 1) then
+        res = reflect(order)*(bessel_j1(x) - i_*bessel_y1(x))
     else
-        res = bessel_jn(order, x) - i_*bessel_yn(order, x)
+        res = reflect(order)*(bessel_jn(order, x) - i_*bessel_yn(order, x))
     endif
 end function hankel2n_real
 
 
 function hankel2v_real(order, x) result(res)
-    implicit none
     real(dp), intent(in) :: order, x
     complex(dp) :: res
 
@@ -286,16 +307,17 @@ end function hankel2v_real
 
 
 function hankel2v_complex(order, z) result(res)
-    implicit none
     real(dp), intent(in) :: order
     complex(dp), intent(in) :: z
     complex(dp) :: res
 
     integer, parameter :: scaling=1, length=1, hankelkind=2
-    real(dp) :: resReal(length), resImag(length)
+    real(dp) :: resReal(length), resImag(length), callorder
     integer :: underflows, ierr
 
-    call zbesh(real(z), aimag(z), order, scaling, hankelkind, length, resReal, resImag, underflows, ierr)
+    callorder = abs(order)
+
+    call zbesh(real(z), aimag(z), callorder, scaling, hankelkind, length, resReal, resImag, underflows, ierr)
     if(ierr > 0) then
         if(ierr == 1) then
             print *, "IERR=1, INPUT ERROR - NO COMPUTATION"
@@ -312,12 +334,13 @@ function hankel2v_complex(order, z) result(res)
         endif
         call stop_error("hankel2: zbesh error")
     endif
-    res = cmplx(resReal(1), resImag(1), kind=dp)
+
+    ! take care of neg. orders by Hrotate() if needed:
+    res = Hrotate(2, order)*(resReal(1) + i_*resImag(1))
 end function hankel2v_complex
 
 
 function besseliv_real(order, x) result(res)
-    implicit none
     real(dp), intent(in) :: order, x
     real(dp) :: res
     complex(dp) :: resCmplx
@@ -328,16 +351,17 @@ end function besseliv_real
 
 
 function besseliv_complex(order, z) result(res)
-    implicit none
     real(dp), intent(in) :: order
     complex(dp), intent(in) :: z
     complex(dp) :: res
 
     integer, parameter :: scaling=1, length=1
-    real(dp) :: resReal(length), resImag(length)
+    real(dp) :: resReal(length), resImag(length), callorder
     integer :: underflows, ierr
 
-    call zbesi(real(z), aimag(z), order, scaling, length, resReal, resImag, underflows, ierr)
+    callorder = abs(order)
+
+    call zbesi(real(z), aimag(z), callorder, scaling, length, resReal, resImag, underflows, ierr)
     if(ierr > 0) then
         if(ierr == 1) then
             print *, "IERR=1, INPUT ERROR - NO COMPUTATION"
@@ -354,11 +378,17 @@ function besseliv_complex(order, z) result(res)
         endif
         call stop_error("besseli: zbesi error")
     endif
-    res = resReal(1) + i_*resImag(1)
+
+    ! negative order from NIST Handbook, (10.27.2)
+    if(order < 0.0_dp) then
+        res = (resReal(1) + i_*resImag(1)) &
+            & + 2.0_dp/pi*sin(callorder*pi)*besselk(callorder, z)
+    else
+        res = resReal(1) + i_*resImag(1)
+    endif
 end function besseliv_complex
 
 function besselkv_real(order, x) result(res)
-    implicit none
     real(dp), intent(in) :: order, x
     real(dp) :: res
     complex(dp) :: resCmplx
@@ -369,16 +399,18 @@ end function besselkv_real
 
 
 function besselkv_complex(order, z) result(res)
-    implicit none
     real(dp), intent(in) :: order
     complex(dp), intent(in) :: z
     complex(dp) :: res
 
     integer, parameter :: scaling=1, length=1
-    real(dp) :: resReal(length), resImag(length)
+    real(dp) :: resReal(length), resImag(length), callorder
     integer :: underflows, ierr
 
-    call zbesk(real(z), aimag(z), order, scaling, length, resReal, resImag, underflows, ierr)
+    ! K_{-v} = K_v; NIST Handbook (10.27.3)
+    callorder = abs(order)
+
+    call zbesk(real(z), aimag(z), callorder, scaling, length, resReal, resImag, underflows, ierr)
     if(ierr > 0) then
         if(ierr == 1) then
             print *, "IERR=1, INPUT ERROR - NO COMPUTATION"
@@ -754,11 +786,11 @@ function airybi(z) result(res)
     complex(dp), intent(in) :: z
     complex(dp) :: res
 
-    integer :: underflow, ierr
+    integer :: ierr
     real(dp) :: resReal, resImag
     integer, parameter :: deriv=0, scaling=1  ! compute unscaled Bi(z)
 
-    call zbiry(real(z), aimag(z), deriv, scaling, resReal, resImag, underflow, ierr)
+    call zbiry(real(z), aimag(z), deriv, scaling, resReal, resImag, ierr)
     if(ierr > 0) then
         if(ierr == 1) then
             print *, "IERR=1, INPUT ERROR - NO COMPUTATION"
@@ -785,11 +817,11 @@ function dairybi(z) result(res)
     complex(dp), intent(in) :: z
     complex(dp) :: res
 
-    integer :: underflow, ierr
+    integer :: ierr
     real(dp) :: resReal, resImag
     integer, parameter :: deriv=1, scaling=1  ! compute unscaled d(Bi(z))/dz
 
-    call zbiry(real(z), aimag(z), deriv, scaling, resReal, resImag, underflow, ierr)
+    call zbiry(real(z), aimag(z), deriv, scaling, resReal, resImag, ierr)
     if(ierr > 0) then
         if(ierr == 1) then
             print *, "IERR=1, INPUT ERROR - NO COMPUTATION"
@@ -808,5 +840,38 @@ function dairybi(z) result(res)
     endif
     res = resReal + i_*resImag
 end function dairybi
+
+! rotate Hankel functions of negative order:
+function Hrotate(hkind, order) result(factor)
+    integer, intent(in) :: hkind
+    real(dp), intent(in) :: order
+    complex(dp) :: factor
+
+    ! NIST Handbook, 10.4.6; note the signs in the exponents
+    ! (NIST gives formulas for order -v with positive v, our 'order' here is negative)
+
+    if(order < 0.0_dp) then
+        if(hkind == 1) then
+            factor = exp(-pi*order*i_)
+        elseif(hkind == 2) then
+            factor = exp(pi*order*i_)
+        endif
+    else
+        factor = (1.0_dp, 0.0_dp)
+    endif
+
+end function Hrotate
+
+! 'reflect' negative integer order Bessel functions if needed
+function reflect(order) result(res)
+    integer, intent(in) :: order
+    integer :: res
+
+    if(order < 0) then
+        res = (-1)**order
+    else
+        res = 1
+    endif
+end function
 
 end module
