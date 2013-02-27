@@ -7,9 +7,9 @@ program test_airybi
 
   ! check a few value against the ones computed with SciPy:
   integer :: i
-  real(dp), parameter :: eps = 1d-6  ! FIXME: the results agree to only ~single precision. why?
-  real(dp), parameter :: xReal(5) = [1.1, 3.0, 10.0, 2.1, 5.5]
-  real(dp), parameter :: xImag(5) = [0.1, -0.3, 2.5, -1.8, 2.0]
+  real(dp), parameter :: eps = 1d-14
+  real(dp), parameter :: xReal(5) = [1.1_dp, 3.0_dp, 10.0_dp, 2.1_dp, 5.5_dp]
+  real(dp), parameter :: xImag(5) = [0.1_dp, -0.3_dp, 2.5_dp, -1.8_dp, 2.0_dp]
 
   complex(dp), parameter :: correctResults(5) = [(1.299900779689054930443603552703D+00, 1.060290624984279589382296649092D-01),&
        (1.219954982972653745321167662041D+01, -6.511549752437751692468737019226D+00),&

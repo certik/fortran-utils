@@ -7,9 +7,9 @@ program test_dairyai
 
   ! check a few value against the ones computed with SciPy:
   integer :: i
-  real(dp), parameter :: eps = 1d-7  ! FIXME: the results agree to only ~single precision. why?
-  real(dp), parameter :: xReal(5) = [1.1, 3.0, 10.0, 2.1, 5.5]
-  real(dp), parameter :: xImag(5) = [0.1, -0.3, 2.5, -1.8, 2.0]
+  real(dp), parameter :: eps = 1d-14
+  real(dp), parameter :: xReal(5) = [1.1_dp, 3.0_dp, 10.0_dp, 2.1_dp, 5.5_dp]
+  real(dp), parameter :: xImag(5) = [0.1_dp, -0.3_dp, 2.5_dp, -1.8_dp, 2.0_dp]
 
   complex(dp), parameter :: correctResults(5) = [(-0.145563472763267_dp, 0.013229788969267_dp),&
        (-0.010610911598755_dp, -0.005772105021642_dp), (0.000000000007158_dp, 0.000000000580016_dp),&
