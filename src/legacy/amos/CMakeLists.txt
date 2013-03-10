@@ -1,0 +1,49 @@
+
+set(SRC
+    ${SRC}
+    ${CMAKE_CURRENT_SOURCE_DIR}/d1mach.f90
+    ${CMAKE_CURRENT_SOURCE_DIR}/i1mach.f90
+    ${CMAKE_CURRENT_SOURCE_DIR}/r1mach.f90
+    ${CMAKE_CURRENT_SOURCE_DIR}/dgamln.f
+    ${CMAKE_CURRENT_SOURCE_DIR}/dsclmr.f
+    ${CMAKE_CURRENT_SOURCE_DIR}/fdump.f
+    ${CMAKE_CURRENT_SOURCE_DIR}/zabs.f
+    ${CMAKE_CURRENT_SOURCE_DIR}/zacai.f
+    ${CMAKE_CURRENT_SOURCE_DIR}/zacon.f
+    ${CMAKE_CURRENT_SOURCE_DIR}/zairy.f
+    ${CMAKE_CURRENT_SOURCE_DIR}/zasyi.f
+    ${CMAKE_CURRENT_SOURCE_DIR}/zbesh.f
+    ${CMAKE_CURRENT_SOURCE_DIR}/zbesi.f
+    ${CMAKE_CURRENT_SOURCE_DIR}/zbesj.f
+    ${CMAKE_CURRENT_SOURCE_DIR}/zbesk.f
+    ${CMAKE_CURRENT_SOURCE_DIR}/zbesy.f
+    ${CMAKE_CURRENT_SOURCE_DIR}/zbinu.f
+    ${CMAKE_CURRENT_SOURCE_DIR}/zbiry.f
+    ${CMAKE_CURRENT_SOURCE_DIR}/zbknu.f
+    ${CMAKE_CURRENT_SOURCE_DIR}/zbuni.f
+    ${CMAKE_CURRENT_SOURCE_DIR}/zbunk.f
+    ${CMAKE_CURRENT_SOURCE_DIR}/zdiv.f
+    ${CMAKE_CURRENT_SOURCE_DIR}/zexp.f
+    ${CMAKE_CURRENT_SOURCE_DIR}/zkscl.f
+    ${CMAKE_CURRENT_SOURCE_DIR}/zlog.f
+    ${CMAKE_CURRENT_SOURCE_DIR}/zmlri.f
+    ${CMAKE_CURRENT_SOURCE_DIR}/zmlt.f
+    ${CMAKE_CURRENT_SOURCE_DIR}/zrati.f
+    ${CMAKE_CURRENT_SOURCE_DIR}/zs1s2.f
+    ${CMAKE_CURRENT_SOURCE_DIR}/zseri.f
+    ${CMAKE_CURRENT_SOURCE_DIR}/zshch.f
+    ${CMAKE_CURRENT_SOURCE_DIR}/zsqrt.f
+    ${CMAKE_CURRENT_SOURCE_DIR}/zuchk.f
+    ${CMAKE_CURRENT_SOURCE_DIR}/zunhj.f
+    ${CMAKE_CURRENT_SOURCE_DIR}/zuni1.f
+    ${CMAKE_CURRENT_SOURCE_DIR}/zuni2.f
+    ${CMAKE_CURRENT_SOURCE_DIR}/zunik.f
+    ${CMAKE_CURRENT_SOURCE_DIR}/zunk1.f
+    ${CMAKE_CURRENT_SOURCE_DIR}/zunk2.f
+    ${CMAKE_CURRENT_SOURCE_DIR}/zuoik.f
+    ${CMAKE_CURRENT_SOURCE_DIR}/zwrsk.f
+    PARENT_SCOPE
+)
+
+add_definitions(-Wno-implicit-interface)
+# TODO: the line above is useless
