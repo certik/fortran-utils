@@ -48,7 +48,7 @@ integer :: i
 real(dp) :: alpha, beta
 if (a < 0) then
     call stop_error("meshexp: a > 0 required")
-else if (a == 1) then
+else if (abs(a - 1) < tiny(1.0_dp)) then
     alpha = (rmax - rmin) / N
     do i = 1, N+1
         mesh(i) = alpha * (i-1.0_dp) + rmin
@@ -89,7 +89,8 @@ integer :: i
 real(dp) :: alpha, beta
 if (a < 0) then
     call stop_error("meshexp_der: a > 0 required")
-else if (a == 1) then
+else if (abs(a - 1) < tiny(1.0_dp)) then
+
     call stop_error("meshexp_der: a == 1 not implemented")
 else
     if (N > 1) then
@@ -124,7 +125,7 @@ integer :: i
 real(dp) :: alpha, beta
 if (a < 0) then
     call stop_error("meshexp_der2: a > 0 required")
-else if (a == 1) then
+else if (abs(a - 1) < tiny(1.0_dp)) then
     call stop_error("meshexp_der2: a == 1 not implemented")
 else
     if (N > 1) then

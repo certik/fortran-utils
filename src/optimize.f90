@@ -32,7 +32,7 @@ end if
 do while (b_ - a_ > tol)
     c = (a_ + b_) / 2
     fc = f(c)
-    if (fc == 0) return   ! We need to make sure f(c) is not zero below
+    if (abs(fc) < tiny(1.0_dp)) return   ! We need to make sure f(c) is not zero below
     if (fa * fc < 0) then
         b_ = c
         fb = fc
