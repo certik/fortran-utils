@@ -1,0 +1,10 @@
+*.cmake
+*.mod
+*.o
+*.make
+*.marks
+*.link
+*.stamp
+*.build
+link.txt
+Makefile
