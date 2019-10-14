@@ -20,7 +20,7 @@ if(WITH_HDF5)
 endif()
 
 
-add_definitions(-Wno-implicit-interface)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/legacy/amos)
+add_subdirectory(legacy/amos)
 
 add_library(fortran_utils ${SRC})
+target_link_libraries(fortran_utils p::amos)

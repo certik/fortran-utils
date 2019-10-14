@@ -26,7 +26,7 @@ call assert(maxval(abs(x-1.0_dp)) < eps)
 
 ! test i*eye*y = -1 with solution y(:) = i
 d = cmplx(-1.0_dp + 0*i_)
-C = i_*cmplx(eye(3))
+C = i_*eye(3)
 y = lstsq(C, d)
 call assert(maxval(abs(y - i_)) < eps)
 

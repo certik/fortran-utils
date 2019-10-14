@@ -14,7 +14,7 @@ Adet = det(A)
 call assert(abs(Adet - 54.0_dp) < eps)
 
 B = 0*i_
-B = cmplx(A)
+B = A
 B(1,1) = i_
 ! B has det(B) = 147 - 93i (SymPy)
 Bdet = det(B)
