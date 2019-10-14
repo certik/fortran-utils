@@ -18,7 +18,7 @@ a = [1, 2, 3, 4, 5]
 call assert(all(a == [1, 2, 3, 4, 5]))
 call assert(.not. all(a == [2, 2, 3, 4, 5]))
 b = [1, 2, 3, 4, 5]
-call assert(all(b == [1, 2, 3, 4, 5]))
-call assert(.not. all(b == [2, 2, 3, 4, 5]))
+call assert(all(abs(b - [1, 2, 3, 4, 5]) < epsilon(1._dp)))
+call assert(.not. all(abs(b - [2, 2, 3, 4, 5]) < epsilon(1._dp)))
 
 end program
