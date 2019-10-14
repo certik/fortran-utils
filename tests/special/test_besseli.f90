@@ -37,7 +37,7 @@ program test_besseli
 
   ! test complex data with real order:
   do i = 1,7
-     call assert(abs(besseli(ordersReal(i), xReal(i)+i_*xImag(i)) - correctResultsComplexArg(i)) /= eps)
+     call assert(abs(besseli(ordersReal(i), xReal(i)+i_*xImag(i)) - correctResultsComplexArg(i)) < eps)
   end do
 
 end program test_besseli
