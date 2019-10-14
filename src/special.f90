@@ -562,7 +562,8 @@ end function
         IF (DABS(X).LT.1.0D-100) THEN
            DO 10 K=0,N
               SJ(K)=0.0D0
-10            DJ(K)=0.0D0
+              DJ(K)=0.0D0
+10         END DO
            SJ(0)=1.0D0
            IF (N.GT.0) THEN
               DJ(1)=.3333333333333333D0
@@ -591,15 +592,18 @@ end function
               F=(2.0D0*K+3.0D0)*F1/X-F0
               IF (K.LE.NM) SJ(K)=F
               F0=F1
-15            F1=F
+              F1=F
+15         END DO
            CS=0.0D0
            IF (DABS(SA).GT.DABS(SB)) CS=SA/F
            IF (DABS(SA).LE.DABS(SB)) CS=SB/F0
            DO 20 K=0,NM
-20            SJ(K)=CS*SJ(K)
+              SJ(K)=CS*SJ(K)
+20         END DO
         ENDIF
         DO 25 K=1,NM
-25         DJ(K)=SJ(K-1)-(K+1.0D0)*SJ(K)/X
+           DJ(K)=SJ(K-1)-(K+1.0D0)*SJ(K)/X
+25      END DO
         RETURN
         END
 
@@ -621,7 +625,8 @@ end function
         IF (X.LT.1.0D-60) THEN
            DO 10 K=0,N
               SY(K)=-1.0D+300
-10            DY(K)=1.0D+300
+              DY(K)=1.0D+300
+10         END DO
            RETURN
         ENDIF
         SY(0)=-DCOS(X)/X
@@ -637,10 +642,12 @@ end function
            SY(K)=F
            IF (DABS(F).GE.1.0D+300) GO TO 20
            F0=F1
-15         F1=F
+           F1=F
+15      END DO
 20      NM=K-1
         DO 25 K=1,NM
-25         DY(K)=SY(K-1)-(K+1.0D0)*SY(K)/X
+           DY(K)=SY(K-1)-(K+1.0D0)*SY(K)/X
+25      END DO
         RETURN
         END
 
@@ -668,7 +675,8 @@ end function
            N0=N1
            F0=F1
            N1=NN
- 10        F1=F
+           F1=F
+ 10     END DO
  20     MSTA1=NN
         RETURN
         END
@@ -706,7 +714,8 @@ end function
            N0=N1
            F0=F1
            N1=NN
-10         F1=F
+           F1=F
+10      END DO
 20      MSTA2=NN+10
         RETURN
         END
