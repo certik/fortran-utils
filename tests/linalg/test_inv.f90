@@ -34,12 +34,12 @@ D = reshape([1.0_dp, 2.0_dp, 3.0_dp, 4.0_dp], shape=[2,2])
 E = reshape([-2.0_dp, 1.0_dp, 1.5_dp, -0.5_dp], shape=[2,2])
 F = inv(D)
 call assert(maxval(abs(E - F)) < eps)
-call assert(maxval(abs(matmul(F, D) - cmplx(eye(2)))) < eps)
-call assert(maxval(abs(matmul(E, D) - cmplx(eye(2)))) < eps)
+call assert(maxval(abs(matmul(F, D) - eye(2))) < eps)
+call assert(maxval(abs(matmul(E, D) - eye(2))) < eps)
 
 D = reshape([0.0_dp, 1.0_dp, 1.0_dp, 0.0_dp], shape=[2,2])  ! is its own inverse
 F = inv(D)
 call assert(maxval(abs(D - F)) < eps)
-call assert(maxval(abs(matmul(F, D) - cmplx(eye(2)))) < eps)
+call assert(maxval(abs(matmul(F, D) - eye(2))) < eps)
 
 end program

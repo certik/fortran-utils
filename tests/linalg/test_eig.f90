@@ -21,7 +21,7 @@ do i = 1, 2
     n = dot_product(c(:,i), c(:,i))
     call assert(abs(n - 1) < eps)
     ! Test that c(:, i) is an eigenvector with eigenvalue lam(i):
-    r = matmul(A-lam(i)*cmplx(eye(2)), c(:, i))
+    r = matmul(A-lam(i)*eye(2), c(:, i))
     call assert(sqrt(abs(dot_product(r, r))) < eps)
 end do
 
@@ -29,18 +29,18 @@ end do
 B = 3*eye(5)
 call eig(B, lamb, cb)
 call assert(maxval(abs(lamb - 3.0_dp)) < eps)  ! all eigenvalues are 3
-call assert(maxval(abs(cb - cmplx(eye(5)))) < eps)  ! eigenvectors are cartesian unit basis vectors
+call assert(maxval(abs(cb - eye(5))) < eps)  ! eigenvectors are cartesian unit basis vectors
 
 ! test complex matrices:
 AC = reshape([1.0_dp+0*i_, 2*i_, 3*i_, -4.0_dp+0*i_], shape=[2,2])
 call eig(AC, lam, c)
-call assert(all(abs(lam - cmplx([-1.0_dp, -2.0_dp])) < eps))
+call assert(all(abs(lam - [-1.0_dp, -2.0_dp]) < eps))
 do i = 1, 2
     ! Test proper norm of eigenvectors:
     n = dot_product(c(:,i), c(:,i))
     call assert(abs(n - 1) < eps)
     ! Test that c(:, i) is an eigenvector with eigenvalue lam(i):
-    r = matmul(AC-lam(i)*cmplx(eye(2)), c(:, i))
+    r = matmul(AC-lam(i)*eye(2), c(:, i))
     call assert(sqrt(abs(dot_product(r, r))) < eps)
 end do
 

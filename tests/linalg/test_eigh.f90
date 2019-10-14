@@ -81,6 +81,6 @@ do i = 1, 2
 end do
 ! Test that eigenvectors are properly normalized:
 BC = matmul(matmul(conjg(transpose(cc)), BC), cc)  ! should be eye(2); Z^H B Z = I
-call assert(maxval(abs(BC - cmplx(eye(2)))) < eps)
+call assert(maxval(abs(BC - eye(2))) < eps)
 
 end program
