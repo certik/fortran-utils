@@ -386,6 +386,13 @@ interface
     REAL(dp) A(LDA,*), TAU(*), WORK(*)
     END SUBROUTINE
 
+    SUBROUTINE DPOTRF( UPLO, N, A, LDA, INFO )
+    import :: dp
+    CHARACTER          UPLO
+    INTEGER            INFO, LDA, N
+    REAL(dp)           A( LDA, * )
+    END SUBROUTINE
+
 end interface
 
 contains
