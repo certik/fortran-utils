@@ -24,7 +24,8 @@ use amos
 implicit none
 
 private
-public bessel_jn_zeros, spherical_bessel_jn, spherical_bessel_jn_zeros, &
+public bessel_jn_zeros, spherical_bessel_jn, spherical_bessel_yn, &
+       spherical_bessel_jn_zeros, &
        besselj, bessely, hankel1, hankel2, besseli, besselk, &  ! note the missing underscores in Bessel functions
        airyai, dairyai, airybi, dairybi  ! Airy functions Ai and Bi and their derivatives
 
@@ -505,6 +506,16 @@ real(dp) :: sj(0:n), dj(0:n)
 call sphj(n, x, nm, sj, dj)
 if (nm /= n) call stop_error("spherical_bessel_jn: sphj didn't converge")
 r = sj(n)
+end function
+
+real(dp) function spherical_bessel_yn(n, x) result(r)
+integer, intent(in) :: n
+real(dp), intent(in) :: x
+integer :: nm
+real(dp) :: sy(0:n), dy(0:n)
+call sphy(n, x, nm, sy, dy)
+if (nm /= n) call stop_error("spherical_bessel_yn: sphy didn't converge")
+r = sy(n)
 end function
 
 
