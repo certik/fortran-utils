@@ -2,13 +2,13 @@ module linalg
   use types, only: dp
   use lapack, only: dsyevd, dsygvd, ilaenv, zgetri, zgetrf, zheevd, &
        dgeev, zgeev, zhegvd, dgesv, zgesv, dgetrf, dgetri, dgelsy, zgelsy, &
-       dgesvd, zgesvd
-  use utils, only: stop_error
+       dgesvd, zgesvd, dgeqrf, dorgqr
+  use utils, only: stop_error, assert
   use constants, only: i_
   implicit none
   private
   public eig, eigvals, eigh, inv, solve, eye, det, lstsq, diag, trace, &
-       svdvals, svd
+       svdvals, svd, qr_fact
 
   ! eigenvalue/-vector problem for general matrices:
   interface eig
@@ -19,6 +19,7 @@ module linalg
   ! eigenvalue/-vector problem for real symmetric/complex hermitian matrices:
   interface eigh
      module procedure deigh_generalized
+     module procedure deigh_generalized_values
      module procedure deigh_simple
      module procedure zeigh_generalized
      module procedure zeigh_simple
@@ -278,6 +279,46 @@ contains
        call stop_error('eigh: dsygvd error')
     end if
   end subroutine deigh_generalized
+
+  subroutine deigh_generalized_values(Am, Bm, lam)
+    ! solves generalized eigen value problem for all eigenvalues
+    ! Am must by symmetric, Bm symmetric positive definite.
+    ! Only the upper triangular part of Am and Bm is used.
+    real(dp), intent(in) :: Am(:,:)   ! LHS matrix: Am c = lam Bm c
+    real(dp), intent(in) :: Bm(:,:)   ! RHS matrix: Am c = lam Bm c
+    real(dp), intent(out) :: lam(:)   ! eigenvalues: Am c = lam Bm c
+    integer :: n
+    ! lapack variables
+    integer :: lwork, liwork, info
+    integer, allocatable :: iwork(:)
+    real(dp), allocatable :: work(:)
+    real(dp) :: c(size(Am, 1), size(Am, 2)), Bmt(size(Bm, 1), size(Bm, 2))
+
+    ! solve
+    n = size(Am,1)
+    call assert_shape(Am, [n, n], "eigh", "Am")
+    call assert_shape(Bm, [n, n], "eigh", "B")
+    lwork = 1 + 2*n
+    liwork = 1
+    allocate(work(lwork), iwork(liwork))
+    c = Am; Bmt = Bm  ! Bmt temporaries overwritten by dsygvd
+    call dsygvd(1,'N','U',n,c,n,Bmt,n,lam,work,lwork,iwork,liwork,info)
+    if (info /= 0) then
+       print *, "dsygvd returned info =", info
+       if (info < 0) then
+          print *, "the", -info, "-th argument had an illegal value"
+       else if (info <= n) then
+          print *, " the algorithm failed to converge; "
+          print *, info, " off-diagonal elements of an intermediate tridiagonal form "
+          print *, "did not converge to zero"
+       else
+          print *, "The leading minor of order ", info-n, &
+               "of B is not positive definite. The factorization of B could ", &
+               "not be completed and no eigenvalues or eigenvectors were computed."
+       end if
+       call stop_error('eigh: dsygvd error')
+    end if
+  end subroutine deigh_generalized_values
 
   subroutine deigh_simple(Am, lam, c)
     ! solves eigen value problem for all eigenvalues and eigenvectors
@@ -953,5 +994,50 @@ contains
        call stop_error("Aborting due to illegal matrix operation")
     end if
   end subroutine zassert_shape
+
+subroutine qr_fact(A, Q, R)
+! Computes a QR factorization of a real matrix A = Q*R
+real(dp), intent(in) :: A(:,:)
+real(dp), intent(out) :: Q(:,:), R(:,:)
+integer :: i, lwork, info, K
+real(dp) :: tau(min(size(A,1),size(A,2))), At(size(A,1), size(A,2))
+real(dp), allocatable :: work(:)
+call assert(size(A,1) >= size(A,2))
+K = min(size(A,1),size(A,2))
+allocate(work(1))
+At = A
+call dgeqrf(size(A,1), size(A,2), At, size(A,1), tau, work, -1, info)
+call assert(info == 0)
+lwork = int(work(1))
+deallocate(work)
+allocate(work(lwork))
+call dgeqrf(size(A,1), size(A,2), At, size(A,1), tau, work, size(work), info)
+if (info /= 0) then
+   print *, "dgeqrf returned info = ", info
+   if (info < 0) then
+      print *, "the ", -info, "-th argument had an illegal value"
+   end if
+   call stop_error('dgeqrf error')
+end if
+R = At(:K,:)
+do i = 1, size(tau)-1
+    R(i+1:,i) = 0
+end do
+call dorgqr(size(A,1), size(A,2), size(tau), At, size(A,1), tau, work, -1, info)
+call assert(info == 0)
+lwork = int(work(1))
+deallocate(work)
+allocate(work(lwork))
+call dorgqr(size(A,1), size(A,2), size(tau), At, size(A,1), tau, work, &
+    size(work), info)
+if (info /= 0) then
+   print *, "dgeqrf returned info = ", info
+   if (info < 0) then
+      print *, "the ", -info, "-th argument had an illegal value"
+   end if
+   call stop_error('dgeqrf error')
+end if
+Q = At
+end subroutine
 
 end module linalg

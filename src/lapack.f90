@@ -9,7 +9,7 @@ implicit none
 ! as long as LAPACK and this file were compiled with the same compiler options,
 ! it will be consistent. (If for example all double precision is promoted to
 ! quadruple precision, it will be promoted both in LAPACK and here.)
-integer, parameter:: dp=kind(0.d0)
+integer, parameter :: dp=kind(0.d0)
 
 interface
 
@@ -67,6 +67,22 @@ interface
     REAL(dp)           A( LDA, * ), B( LDB, * ), WORK( * )
     END SUBROUTINE
 
+    SUBROUTINE DSYTRS( UPLO, N, NRHS, A, LDA, IPIV, B, LDB, INFO )
+    import :: dp
+    CHARACTER          UPLO
+    INTEGER            INFO, LDA, LDB, N, NRHS
+    INTEGER            IPIV( * )
+    REAL(dp)           A( LDA, * ), B( LDB, * )
+    END SUBROUTINE
+
+    SUBROUTINE DSYTRF( UPLO, N, A, LDA, IPIV, WORK, LWORK, INFO )
+    import :: dp
+    CHARACTER          UPLO
+    INTEGER            INFO, LDA, LWORK, N
+    INTEGER            IPIV( * )
+    REAL(dp)           A( LDA, * ), WORK( * )
+    END SUBROUTINE
+
     SUBROUTINE DSYSVX( FACT, UPLO, N, NRHS, A, LDA, AF, LDAF, IPIV, B, &
                        LDB, X, LDX, RCOND, FERR, BERR, WORK, LWORK, &
                        IWORK, INFO )
@@ -97,6 +113,18 @@ interface
     REAL(dp)           ABSTOL, VL, VU
     INTEGER            IFAIL( * ), IWORK( * )
     REAL(dp)           A( LDA, * ), B( LDB, * ), W( * ), WORK( * ), &
+                       Z( LDZ, * )
+    END SUBROUTINE
+
+    SUBROUTINE DSYEVX( JOBZ, RANGE, UPLO, N, A, LDA, &
+                       VL, VU, IL, IU, ABSTOL, M, W, Z, LDZ, WORK, &
+                       LWORK, IWORK, IFAIL, INFO )
+    import :: dp
+    CHARACTER          JOBZ, RANGE, UPLO
+    INTEGER            IL, INFO, IU, LDA, LDZ, LWORK, M, N
+    REAL(dp)           ABSTOL, VL, VU
+    INTEGER            IFAIL( * ), IWORK( * )
+    REAL(dp)           A( LDA, * ), W( * ), WORK( * ), &
                        Z( LDZ, * )
     END SUBROUTINE
 
@@ -195,6 +223,14 @@ interface
     COMPLEX(dp)        A( LDA, * )
     END SUBROUTINE
 
+    SUBROUTINE ZGETRS( TRANS, N, NRHS, A, LDA, IPIV, B, LDB, INFO )
+    import :: dp
+    CHARACTER          TRANS
+    INTEGER            INFO, LDA, LDB, N, NRHS
+    INTEGER            IPIV( * )
+    COMPLEX(dp)         A( LDA, * ), B( LDB, * )
+    END SUBROUTINE
+
     SUBROUTINE ZGETRI( N, A, LDA, IPIV, WORK, LWORK, INFO )
     import :: dp
     INTEGER            INFO, LDA, LWORK, N
@@ -280,6 +316,74 @@ interface
     INTEGER            INFO, LDA, LDU, LDVT, LWORK, M, N
     REAL(dp)           RWORK( * ), S( * )
     COMPLEX(dp)        A( LDA, * ), U( LDU, * ), VT( LDVT, * ), WORK( * )
+    END SUBROUTINE
+
+    SUBROUTINE DSTEVD( JOBZ, N, D, E, Z, LDZ, WORK, LWORK, IWORK, &
+                       LIWORK, INFO )
+    import :: dp
+    CHARACTER          JOBZ
+    INTEGER            INFO, LDZ, LIWORK, LWORK, N
+    INTEGER            IWORK( * )
+    REAL(dp)           D( * ), E( * ), WORK( * ), Z( LDZ, * )
+    END SUBROUTINE
+
+    SUBROUTINE XERBLA( SRNAME, INFO )
+    CHARACTER*(*)      SRNAME
+    INTEGER            INFO
+    END SUBROUTINE
+
+! BLAS
+
+    SUBROUTINE ZCOPY(N,ZX,INCX,ZY,INCY)
+    import :: dp
+    INTEGER INCX,INCY,N
+    COMPLEX(dp) ZX(*),ZY(*)
+    END SUBROUTINE
+
+    SUBROUTINE DAXPY(N,DA,DX,INCX,DY,INCY)
+    import :: dp
+    integer :: INCX, INCY, N
+    real(dp) :: DA, DX(*), DY(*)
+    END SUBROUTINE
+
+    SUBROUTINE DGEMM(TRANSA,TRANSB,M,N,K,ALPHA,A,LDA,B,LDB,BETA,C,LDC)
+    import :: dp
+    DOUBLE PRECISION ALPHA,BETA
+    INTEGER K,LDA,LDB,LDC,M,N
+    CHARACTER TRANSA,TRANSB
+    REAL(dp) A(LDA,*),B(LDB,*),C(LDC,*)
+    END SUBROUTINE
+
+    real(dp) FUNCTION DNRM2(N,X,INCX)
+    import :: dp
+    integer :: INCX, N
+    real(dp) :: X(*)
+    END FUNCTION
+
+    SUBROUTINE DSCAL(N,DA,DX,INCX)
+    import :: dp
+    real(dp) :: DA, DX(*)
+    integer :: INCX, N
+    END SUBROUTINE
+
+    SUBROUTINE DSYMM(SIDE,UPLO,M,N,ALPHA,A,LDA,B,LDB,BETA,C,LDC)
+    import :: dp
+    REAL(dp) ALPHA,BETA
+    INTEGER LDA,LDB,LDC,M,N
+    CHARACTER SIDE,UPLO
+    REAL(dp) A(LDA,*),B(LDB,*),C(LDC,*)
+    END SUBROUTINE
+
+    SUBROUTINE DGEQRF(M, N, A, LDA, TAU, WORK, LWORK, INFO)
+    import :: dp
+    INTEGER  INFO, LDA, LWORK, M, N
+    REAL(dp) A(LDA, *), TAU(*), WORK(*)
+    END SUBROUTINE
+
+    SUBROUTINE DORGQR(M, N, K, A, LDA, TAU, WORK, LWORK, INFO)
+    import :: dp
+    INTEGER  INFO, K, LDA, LWORK, M, N
+    REAL(dp) A(LDA,*), TAU(*), WORK(*)
     END SUBROUTINE
 
 end interface
