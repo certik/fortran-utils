@@ -998,9 +998,9 @@ contains
        call stop_error('cholesky: dpotrf error')
     endif
     do j = 1, n
-    do i = 1, n
-        if (i < j) L(i,j) = 0
-    end do
+        do i = 1, j-1
+            L(i,j) = 0
+        end do
     end do
   end function dcholesky
 
