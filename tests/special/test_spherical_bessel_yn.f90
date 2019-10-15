@@ -9,7 +9,7 @@ program test_spherical_bessel_yn
   ! to with CEPHES whereas we use AMOS
 
   integer :: i
-  real(dp), parameter :: eps = 1d-13
+  real(dp), parameter :: eps = 1e-13_dp
   integer, parameter :: ordersReal(7) = [0,  1,  2,  3,  4,  5,  6]
   real(dp),  parameter :: xReal(7) = [1.1_dp,  3.0_dp,  10.0_dp,  2.1_dp,  5.5_dp,  1.1_dp,  2.0_dp]
   real(dp), parameter :: correctResultsRealArg(7) = [-0.4123601103868884_dp, 0.06295916360231597_dp, &
