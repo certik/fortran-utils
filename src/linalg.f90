@@ -2,13 +2,13 @@ module linalg
   use types, only: dp
   use lapack, only: dsyevd, dsygvd, ilaenv, zgetri, zgetrf, zheevd, &
        dgeev, zgeev, zhegvd, dgesv, zgesv, dgetrf, dgetri, dgelsy, zgelsy, &
-       dgesvd, zgesvd, dgeqrf, dorgqr, dpotrf
+       dgesvd, zgesvd, dgeqrf, dorgqr, dpotrf, dtrtrs
   use utils, only: stop_error, assert
   use constants, only: i_
   implicit none
   private
   public eig, eigvals, eigh, inv, solve, eye, det, lstsq, diag, trace, &
-       svdvals, svd, qr_fact, cholesky
+       svdvals, svd, qr_fact, cholesky, solve_triangular
 
   ! eigenvalue/-vector problem for general matrices:
   interface eig
@@ -42,6 +42,10 @@ module linalg
      module procedure dsolve
      module procedure zsolve
   end interface solve
+
+  interface solve_triangular
+     module procedure dsolve_triangular
+  end interface solve_triangular
 
   ! determinants of real/complex square matrices:
   interface det
@@ -592,6 +596,44 @@ contains
     endif
     x = bt(:,1)
   end function zsolve
+
+  function dsolve_triangular(A, b, trans) result(x)
+    ! solves a system of equations A x = b with one right hand side
+    ! A is a lower triangular matrix (only the lower triangle is used)
+    real(dp), intent(in) :: A(:,:)  ! coefficient matrix A
+    real(dp), intent(in) :: b(:)  ! right-hand-side A x = b
+    logical, intent(in), optional :: trans
+    real(dp) :: x(size(b))
+    ! LAPACK variables:
+    real(dp) :: bt(size(b))
+    integer :: n, info
+    logical :: trans_
+    character :: trans_char
+    trans_ = .false.
+    if (present(trans)) trans_ = trans
+    if (trans_) then
+        trans_char = "T"
+    else
+        trans_char = "N"
+    end if
+
+    n = size(A, 1)
+    call assert_shape(A, [n, n], "solve", "A")
+    bt = b
+    call dtrtrs("L", trans_char, "N", n, 1, A, n, bt, n, info)
+    if(info /= 0) then
+       print *, "dtrtrs returned info =", info
+       if (info < 0) then
+          print *, "the", -info, "-th argument had an illegal value"
+       else
+          print *, "the ", info, "-th diagonal element of A is zero,"
+          print *, "indicating that the matrix is singular and the solutions"
+          print *, "X have not been computed."
+       end if
+       call stop_error('inv: dgesv error')
+    endif
+    x = bt
+  end function dsolve_triangular
 
   function eye(n) result(A)
     ! Returns the identity matrix of size n x n and type real.
