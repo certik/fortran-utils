@@ -2,13 +2,13 @@ module linalg
   use types, only: dp
   use lapack, only: dsyevd, dsygvd, ilaenv, zgetri, zgetrf, zheevd, &
        dgeev, zgeev, zhegvd, dgesv, zgesv, dgetrf, dgetri, dgelsy, zgelsy, &
-       dgesvd, zgesvd, dgeqrf, dorgqr
+       dgesvd, zgesvd, dgeqrf, dorgqr, dpotrf
   use utils, only: stop_error, assert
   use constants, only: i_
   implicit none
   private
   public eig, eigvals, eigh, inv, solve, eye, det, lstsq, diag, trace, &
-       svdvals, svd, qr_fact
+       svdvals, svd, qr_fact, cholesky
 
   ! eigenvalue/-vector problem for general matrices:
   interface eig
@@ -78,6 +78,11 @@ module linalg
      module procedure dsvd
      module procedure zsvd
   end interface svd
+
+  ! Cholesky decomposition
+  interface cholesky
+     module procedure dcholesky
+  end interface cholesky
 
   ! assert shape of matrices:
   interface assert_shape
@@ -968,6 +973,36 @@ contains
        call stop_error('svd: zgesvd error')
     endif
   end subroutine zsvd
+
+  function dcholesky(A) result(L)
+    ! Computes Cholesky decomposition of A
+    ! A must by symmetric
+    ! Only the lower triangular part of A is used.
+    real(dp), intent(in) :: A(:,:)
+    real(dp) :: L(size(A,1), size(A,1))
+    ! LAPACK related:
+    integer :: info, n, i, j
+    n = size(A,1)
+    call assert_shape(A, [n, n], "cholesky", "A")
+    L = A
+    call dpotrf("L", n, L, n, info)
+    if(info /= 0) then
+       print *, "dpotrf returned info = ", info
+       if(info < 0) then
+          print *, "the ", -info, "-th argument had an illegal value"
+       else
+          print *, "the leading minor of order", info
+          print *, "is not positive definite, and the factorization could not"
+          print *, "be completed."
+       endif
+       call stop_error('cholesky: dpotrf error')
+    endif
+    do j = 1, n
+        do i = 1, j-1
+            L(i,j) = 0
+        end do
+    end do
+  end function dcholesky
 
   subroutine dassert_shape(A, shap, routine, matname)
     ! make sure a given real matrix has a given shape
