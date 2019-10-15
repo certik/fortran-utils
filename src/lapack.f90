@@ -393,6 +393,13 @@ interface
     REAL(dp)           A( LDA, * )
     END SUBROUTINE
 
+    SUBROUTINE DTRTRS( UPLO, TRANS, DIAG, N, NRHS, A, LDA, B, LDB, INFO )
+    import :: dp
+    CHARACTER          DIAG, TRANS, UPLO
+    INTEGER            INFO, LDA, LDB, N, NRHS
+    REAL(dp)           A( LDA, * ), B( LDB, * )
+    END SUBROUTINE
+
 end interface
 
 contains
