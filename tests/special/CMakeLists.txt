@@ -45,3 +45,7 @@ add_test(test_airybi ${PROJECT_BINARY_DIR}/test_airybi)
 add_executable(test_dairybi test_dairybi.f90)
 target_link_libraries(test_dairybi fortran_utils)
 add_test(test_dairybi ${PROJECT_BINARY_DIR}/test_dairybi)
+
+add_executable(test_spherical_bessel_yn test_spherical_bessel_yn.f90)
+target_link_libraries(test_spherical_bessel_yn fortran_utils)
+add_test(test_spherical_bessel_yn ${PROJECT_BINARY_DIR}/test_spherical_bessel_yn)
